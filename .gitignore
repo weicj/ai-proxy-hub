@@ -1,0 +1,50 @@
+# OS / file manager noise
+.DS_Store
+._*
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+
+# Python cache / tooling
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+.tox/
+.nox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build / packaging / smoke outputs
+build/
+dist/
+dist-*/
+dist*/
+.release-*/
+.entry-*/
+*.egg-info/
+pip-wheel-metadata/
+pkg-smoke/
+
+# Local runtime / temp files
+tmp/
+*.tmp
+*.log
+*.backup
+*-state.json
+api-config.json
+api-config.local.json
+config_*.json
+
+# Keep the shared example config in the repo
+!examples/api-config.example.json

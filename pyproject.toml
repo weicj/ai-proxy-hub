@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-proxy-hub"
+version = "0.3.0"
+description = "Cross-platform local AI proxy hub with routing, failover, CLI and web dashboard."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{name = "AI Proxy Hub contributors"}]
+license = {file = "LICENSE"}
+keywords = ["ai", "proxy", "router", "openai-compatible", "codex", "hub"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "rich>=13,<15",
+]
+
+[project.scripts]
+ai-proxy-hub = "ai_proxy_hub.entrypoints:main"
+
+[tool.setuptools]
+packages = ["ai_proxy_hub"]
+py-modules = ["router_server", "cli_modern"]
+license-files = ["LICENSE", "NOTICE"]
+include-package-data = false
+
+[tool.setuptools.data-files]
+"share/ai-proxy-hub/web" = [
+  "web/index.html",
+  "web/app-theme.css",
+  "web/app.css",
+  "web/app-effects.css",
+  "web/app-01-i18n.js",
+  "web/app-02-foundation.js",
+  "web/app-02-model.js",
+  "web/app-02-core.js",
+  "web/app-03-ui.js",
+  "web/app-03-runtime.js",
+  "web/app-03-upstream-render.js",
+  "web/app-03-upstream-editor.js",
+  "web/app-03-upstreams.js",
+  "web/app-04-usage.js",
+  "web/app-05-bootstrap.js",
+]

@@ -1,0 +1,106 @@
+{
+  "version": 7,
+  "listen_host": "127.0.0.1",
+  "listen_port": 8787,
+  "local_api_key": "sk-local-example-primary",
+  "local_api_keys": [
+    {
+      "id": "local-key-default",
+      "name": "Default Local Key",
+      "key": "sk-local-example-primary",
+      "enabled": true,
+      "created_at": "2026-04-05T00:00:00+00:00",
+      "allowed_protocols": [
+        "openai",
+        "anthropic",
+        "gemini"
+      ]
+    }
+  ],
+  "request_timeout_sec": 120,
+  "cooldown_seconds": 60,
+  "default_model_mode": "upstream",
+  "global_default_model": "",
+  "ui_language": "auto",
+  "ui_language_initialized": false,
+  "theme_mode": "auto",
+  "endpoint_mode": "shared",
+  "shared_api_prefixes": {
+    "openai": "/openai",
+    "anthropic": "/claude",
+    "gemini": "/gemini"
+  },
+  "split_api_ports": {
+    "openai": 8787,
+    "anthropic": 8788,
+    "gemini": 8789
+  },
+  "web_ui_port": 8787,
+  "auto_routing_enabled": true,
+  "routing_mode": "priority",
+  "manual_active_upstream_id": "openai-main",
+  "routing_by_protocol": {
+    "openai": {
+      "auto_routing_enabled": true,
+      "routing_mode": "priority",
+      "manual_active_upstream_id": "openai-main"
+    },
+    "anthropic": {
+      "auto_routing_enabled": true,
+      "routing_mode": "latency",
+      "manual_active_upstream_id": "claude-main"
+    },
+    "gemini": {
+      "auto_routing_enabled": false,
+      "routing_mode": "priority",
+      "manual_active_upstream_id": "gemini-main"
+    }
+  },
+  "retryable_statuses": [
+    401,
+    403,
+    408,
+    409,
+    425,
+    429,
+    500,
+    502,
+    503,
+    504
+  ],
+  "upstreams": [
+    {
+      "id": "openai-main",
+      "name": "Codex Main",
+      "protocol": "openai",
+      "base_url": "https://openai-compatible.example.com/v1",
+      "api_key": "sk-upstream-openai-example",
+      "enabled": true,
+      "notes": "OpenAI / Codex compatible upstream",
+      "default_model": "gpt-5.4",
+      "extra_headers": {}
+    },
+    {
+      "id": "claude-main",
+      "name": "Claude Main",
+      "protocol": "anthropic",
+      "base_url": "https://anthropic-compatible.example.com",
+      "api_key": "sk-ant-example",
+      "enabled": true,
+      "notes": "Anthropic compatible upstream",
+      "default_model": "claude-sonnet-4-5",
+      "extra_headers": {}
+    },
+    {
+      "id": "gemini-main",
+      "name": "Gemini Main",
+      "protocol": "gemini",
+      "base_url": "https://gemini-compatible.example.com",
+      "api_key": "sk-gemini-example",
+      "enabled": true,
+      "notes": "Gemini compatible upstream",
+      "default_model": "gemini-2.5-flash",
+      "extra_headers": {}
+    }
+  ]
+}

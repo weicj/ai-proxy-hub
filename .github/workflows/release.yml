@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+      - name: Build release artifacts
+        run: >
+          python scripts/build_release.py
+          --version "${GITHUB_REF_NAME#v}"
+          --download-base-url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}"
+          --homepage "https://github.com/${{ github.repository }}"
+      - name: Verify release artifacts
+        run: python scripts/verify_release_artifacts.py --dist-dir dist --version "${GITHUB_REF_NAME#v}"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-proxy-hub-release
+          path: dist/*

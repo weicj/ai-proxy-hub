@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-motion="boot">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Proxy Hub</title>
+    <!-- Lucide Icons -->
+    <link rel="stylesheet" href="/app-theme.css" />
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/app-effects.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div class="brand">
+          <h1>
+            <div class="logo-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">
+                <g fill="none" stroke="#f8fbff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 21v7l10 7"/>
+                  <path d="M32 17v18"/>
+                  <path d="M46 21v7l-10 7"/>
+                  <path d="M32 46v6"/>
+                </g>
+                <g fill="#f8fbff">
+                  <rect x="13" y="10" width="10" height="11" rx="3.8"/>
+                  <rect x="27" y="6" width="10" height="11" rx="3.8"/>
+                  <rect x="41" y="10" width="10" height="11" rx="3.8"/>
+                  <rect x="24" y="35" width="16" height="11" rx="5.5"/>
+                  <rect x="27" y="52" width="10" height="8" rx="3.4"/>
+                </g>
+              </svg>
+            </div>
+            <span class="logo-text" id="appTitle"></span>
+          </h1>
+          <p id="appSubtitle"></p>
+        </div>
+        <div class="prefs-box">
+          <label class="choice-field prefs-choice">
+            <span class="prefs-label" id="languageLabel"></span>
+            <select id="ui_language"></select>
+          </label>
+          <label class="choice-field prefs-choice">
+            <span class="prefs-label" id="themeLabel"></span>
+            <select id="theme_mode"></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="preview-header">
+          <div class="preview-header-main">
+            <div class="panel-title-row">
+              <h2 class="panel-title" id="previewTitle"></h2>
+              <span class="section-dirty-badge" id="previewDirtyBadge" hidden></span>
+            </div>
+            <p class="hint" id="previewHint"></p>
+          </div>
+          <div class="preview-header-side">
+            <p class="draft-state clean" id="draftState"></p>
+            <div class="actions preview-actions">
+              <button class="primary" id="saveAllBtn"></button>
+              <button class="secondary" id="refreshBtn"></button>
+              <button class="secondary" id="exportConfigBtn"></button>
+              <button class="secondary" id="importConfigBtn"></button>
+            </div>
+          </div>
+        </div>
+        <div class="flash" id="flash"></div>
+        <div class="preview-layout">
+          <div class="subpanel preview-mode-panel">
+            <div class="preview-mode-header">
+              <span class="subpanel-label" id="globalModeSectionLabel"></span>
+              <p class="fine" id="globalModeSectionHint"></p>
+            </div>
+            <div class="mode-button-grid" id="globalModeButtons">
+              <button class="mode-button stop" type="button" id="globalStopBtn" data-service-action="stop_all">
+                <span class="mode-button-title" id="globalStopTitle"></span>
+                <span class="mode-button-desc" id="globalStopDesc"></span>
+              </button>
+              <button class="mode-button forwarding" type="button" id="globalForwardingBtn" data-service-action="start_forwarding">
+                <span class="mode-button-title" id="globalForwardingTitle"></span>
+                <span class="mode-button-desc" id="globalForwardingDesc"></span>
+              </button>
+              <button class="mode-button proxy" type="button" id="globalProxyBtn" data-service-action="start_proxy">
+                <span class="mode-button-title" id="globalProxyTitle"></span>
+                <span class="mode-button-desc" id="globalProxyDesc"></span>
+              </button>
+            </div>
+            <div class="preview-mode-divider"></div>
+            <div class="editor-grid endpoint-row">
+              <label class="choice-field">
+                <span id="endpointModeLabel"></span>
+                <select id="endpoint_mode"></select>
+              </label>
+              <label id="sharedListenHostWrapper">
+                <span id="sharedListenHostLabel"></span>
+                <input id="listen_host" />
+              </label>
+              <label id="sharedListenPortWrapper">
+                <span id="sharedListenPortLabel"></span>
+                <input id="listen_port" type="number" min="1" max="65535" />
+              </label>
+              <label id="webUiPortWrapper">
+                <span id="webUiPortLabel"></span>
+                <input id="web_ui_port" type="number" min="1" max="65535" />
+              </label>
+              <div class="endpoint-toggle-field endpoint-toggle-inline" id="lanAccessWrapper">
+                <span id="lanAccessLabel"></span>
+                <button class="switch-chip compact" type="button" id="lanAccessToggle">
+                  <span class="switch-track"><span class="switch-knob"></span></span>
+                  <span class="switch-label"></span>
+                </button>
+                <p class="fine endpoint-toggle-hint" id="lanAccessHint"></p>
+              </div>
+            </div>
+            <p class="fine" id="endpointModeHint" style="margin: 12px 0 0"></p>
+          </div>
+          <div class="meta-card preview-service-card">
+            <div class="preview-service-grid">
+              <div class="runtime-client-card">
+                <div class="runtime-client-main">
+                  <span id="runtimeServiceLabel"></span>
+                  <strong id="runtimeServiceStatus"></strong>
+                  <div class="fine runtime-detail" id="runtimeServiceMeta"></div>
+                  <div class="tiny runtime-detail" id="runtimeServiceActive"></div>
+                </div>
+              </div>
+              <div class="runtime-client-stack" id="runtimeClientStatusList"></div>
+            </div>
+          </div>
+        </div>
+        <input id="importConfigInput" type="file" accept="application/json,.json" hidden />
+      </section>
+
+      <section class="panel">
+        <div class="upstream-header">
+          <div>
+            <div class="panel-title-row">
+              <h2 class="panel-title" id="localKeysPanelTitle"></h2>
+              <span class="section-dirty-badge" id="localKeysDirtyBadge" hidden></span>
+            </div>
+            <p class="hint" id="localKeysPanelHint"></p>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="addLocalKeyBtn"></button>
+            <button class="ghost" id="generateLocalKeyBtn"></button>
+          </div>
+        </div>
+        <div class="local-key-list" id="localKeyList"></div>
+      </section>
+
+      <section class="panel">
+        <div class="upstream-header">
+          <div>
+            <div class="panel-title-row">
+              <h2 class="panel-title" id="workspaceTitle"></h2>
+              <span class="section-dirty-badge" id="workspaceDirtyBadge" hidden></span>
+            </div>
+            <p class="hint" id="workspaceHint"></p>
+          </div>
+          <div class="actions">
+            <button class="secondary" id="workspaceTestAllBtn"></button>
+          </div>
+        </div>
+        <div class="protocol-nav" id="workspaceProtocolTabs"></div>
+      </section>
+
+      <div class="workspace-main">
+        <section class="panel workspace-collapsed-panel" id="workspaceCollapsedPanel" hidden>
+          <p class="hint" id="workspaceCollapsedHint"></p>
+        </section>
+
+        <section class="panel workspace-detail-panel" id="workspaceDetailPanel">
+            <div class="upstream-header">
+              <div>
+                <div class="panel-title-row">
+                  <h2 class="panel-title" id="basicSettingsTitle"></h2>
+                  <span class="section-dirty-badge" id="basicSettingsDirtyBadge" hidden></span>
+                </div>
+                <p class="hint" id="basicSettingsHint"></p>
+              </div>
+            </div>
+            <div class="settings-stack">
+              <div class="settings-strip">
+                <div class="settings-strip-head">
+                  <span class="subpanel-label" id="workspaceRuntimeSectionLabel"></span>
+                  <p class="fine" id="workspaceRuntimeHint"></p>
+                </div>
+                <div class="settings-strip-body">
+                  <div class="workspace-runtime-grid">
+                    <div class="meta-card runtime-client-card workspace-runtime-card" id="workspaceProxyCard">
+                      <div class="runtime-client-main">
+                        <span id="workspaceProxyLabel"></span>
+                        <strong id="workspaceProxyStatus"></strong>
+                        <div class="fine runtime-detail" id="workspaceProxyMeta"></div>
+                        <div class="tiny runtime-detail" id="workspaceProxyUrl"></div>
+                      </div>
+                      <div class="runtime-client-actions">
+                        <button class="switch-chip compact workspace-switch" type="button" id="workspaceServiceToggle" data-service-protocol="openai" data-service-action="start_protocol">
+                          <span class="switch-track"><span class="switch-knob"></span></span>
+                          <span class="switch-label" id="workspaceServiceToggleLabel"></span>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="meta-card runtime-client-card workspace-runtime-card" id="workspaceLocalCard">
+                      <div class="runtime-client-main">
+                        <span id="workspaceLocalLabel"></span>
+                        <strong id="workspaceLocalStatus"></strong>
+                        <div class="fine runtime-detail" id="workspaceLocalMeta"></div>
+                        <div class="tiny runtime-detail" id="workspaceLocalUrl"></div>
+                      </div>
+                      <div class="runtime-client-actions">
+                        <button class="switch-chip compact workspace-switch" type="button" id="workspaceBindingToggle" data-client-toggle="codex" data-client-action="switch">
+                          <span class="switch-track"><span class="switch-knob"></span></span>
+                          <span class="switch-label" id="workspaceBindingToggleLabel"></span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-strip">
+                <div class="settings-strip-head">
+                  <span class="subpanel-label" id="networkSectionLabel"></span>
+                  <p class="fine" id="networkHint"></p>
+                </div>
+                <div class="settings-strip-body">
+                  <div class="settings-row settings-row-6">
+                    <label>
+                      <span id="protocolListenHostLabel"></span>
+                      <input id="protocol_listen_host" />
+                    </label>
+                    <label>
+                      <span id="protocolListenPortLabel"></span>
+                      <input id="protocol_listen_port" type="number" min="1" max="65535" />
+                    </label>
+                    <label class="protocol-path-field">
+                      <span id="protocolPathLabel"></span>
+                      <input id="protocol_path" />
+                    </label>
+                    <label class="protocol-url-field">
+                      <span id="protocolLocalUrlLabel"></span>
+                      <input id="protocol_local_url" disabled />
+                    </label>
+                    <label>
+                      <span id="timeoutLabel"></span>
+                      <input id="request_timeout_sec" type="number" min="5" />
+                    </label>
+                    <label>
+                      <span id="cooldownLabel"></span>
+                      <input id="cooldown_seconds" type="number" min="0" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-strip">
+                <div class="settings-strip-head">
+                  <span class="subpanel-label" id="modelSectionLabel"></span>
+                  <p class="fine" id="defaultModelHint"></p>
+                </div>
+                <div class="settings-strip-body">
+                  <div class="settings-row settings-row-2">
+                    <label class="choice-field">
+                      <span id="defaultModelModeLabel"></span>
+                      <select id="default_model_mode"></select>
+                    </label>
+                    <label>
+                      <span id="globalDefaultModelLabel"></span>
+                      <input id="global_default_model" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-strip">
+                <div class="settings-strip-head">
+                  <span class="subpanel-label" id="routingSectionLabel"></span>
+                  <p class="fine" id="routingHint"></p>
+                </div>
+                <div class="settings-strip-body">
+                  <div class="settings-row settings-row-3">
+                    <label class="choice-field">
+                      <span id="routingStrategyLabel"></span>
+                      <select id="routing_strategy"></select>
+                    </label>
+                    <label class="choice-field" id="manualActiveWrapper">
+                      <span id="manualActiveLabel"></span>
+                      <select id="manual_active_upstream_id"></select>
+                    </label>
+                    <div class="route-order-box">
+                      <span class="subpanel-label" id="currentProtocolRouteOrderLabel"></span>
+                      <div class="fine" id="currentProtocolRouteOrder"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="workspace-subsection">
+              <div class="upstream-header">
+              <div>
+                <div class="panel-title-row">
+                  <h2 class="panel-title" id="upstreamListTitle"></h2>
+                  <span class="section-dirty-badge" id="upstreamListDirtyBadge" hidden></span>
+                </div>
+                <p class="hint" id="upstreamListHint"></p>
+              </div>
+              <div class="actions">
+                <button class="secondary" id="testAllBtn"></button>
+                <button class="ghost" id="addUpstreamBtn"></button>
+              </div>
+              </div>
+              <div class="upstream-list" id="upstreamList"></div>
+            </div>
+        </section>
+
+      </div>
+
+      <section class="panel workspace-usage-panel" id="workspaceUsagePanel">
+          <div class="upstream-header">
+            <div class="usage-header-main">
+              <h2 class="panel-title" id="usageTitle"></h2>
+              <p class="hint" id="usageHint"></p>
+              <div class="usage-filter-row">
+                <div class="filter-group" id="usageScopeFilters"></div>
+                <label class="usage-key-field usage-key-combobox" for="usageLocalKeyInput">
+                  <span id="usageLocalKeyLabel"></span>
+                  <div class="usage-key-combobox-shell">
+                    <input id="usageLocalKeyInput" autocomplete="off" />
+                    <button class="usage-key-toggle" id="usageLocalKeyToggle" type="button" aria-haspopup="listbox" aria-expanded="false"></button>
+                  </div>
+                  <div class="usage-key-menu" id="usageLocalKeyMenu" role="listbox" hidden></div>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="usage-hover-card">
+            <div class="fine" id="usageHoverDetail"></div>
+          </div>
+          <div class="usage-controls">
+            <div class="tiny" id="usageAxisTitleNote"></div>
+            <div class="filter-group usage-range-group" id="usageFilters"></div>
+          </div>
+
+          <div class="chart-shell">
+            <div class="chart-layout">
+              <div class="chart-axis">
+                <div class="chart-axis-value" id="usageAxisMax"></div>
+                <div class="chart-axis-title" id="usageAxisTitle"></div>
+                <div class="chart-axis-value" id="usageAxisMin"></div>
+              </div>
+              <div class="chart-bars" id="usageChart"></div>
+            </div>
+            <div class="chart-legend" id="usageLegend" style="margin-top: 14px"></div>
+          </div>
+      </section>
+    </main>
+
+    <script src="/app-01-i18n.js"></script>
+    <script src="/app-02-foundation.js"></script>
+    <script src="/app-02-model.js"></script>
+    <script src="/app-02-core.js"></script>
+    <script src="/app-03-ui.js"></script>
+    <script src="/app-03-runtime.js"></script>
+    <script src="/app-03-upstream-render.js"></script>
+    <script src="/app-03-upstream-editor.js"></script>
+    <script src="/app-03-upstreams.js"></script>
+    <script src="/app-04-usage.js"></script>
+    <script src="/app-05-bootstrap.js"></script>
+  </body>
+</html>

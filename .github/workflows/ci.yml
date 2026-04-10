@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify module entrypoint
+        run: |
+          python -m ai_proxy_hub --version
+          python -m ai_proxy_hub --print-paths
+      - name: Install package smoke test
+        run: |
+          python -m pip install .
+          python -c "import shutil, subprocess; exe = shutil.which('ai-proxy-hub'); assert exe, 'ai-proxy-hub entrypoint missing'; subprocess.run([exe, '--version'], check=True)"
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+      - name: Verify packaging metadata
+        run: python -m py_compile router_server.py tests/test_router.py scripts/build_release.py scripts/verify_release_artifacts.py
+      - name: Build and verify release artifacts
+        run: |
+          python scripts/build_release.py --version 0.3.0-ci --output-dir dist-ci
+          python scripts/verify_release_artifacts.py --dist-dir dist-ci --version 0.3.0-ci
