@@ -20,11 +20,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def tap_readme(app_name: str, tap_repo: str, version: str = "") -> str:
+def tap_shorthand(tap_repo: str) -> str:
     shorthand = tap_repo
     if "/" in tap_repo:
         owner, repo = tap_repo.split("/", 1)
         shorthand = f"{owner}/{repo.removeprefix('homebrew-')}"
+    return shorthand
+
+
+def tap_readme(app_name: str, tap_repo: str, version: str = "") -> str:
+    shorthand = tap_shorthand(tap_repo)
     lines = [
         f"# Homebrew Tap for {app_name}",
         "",
@@ -41,7 +46,7 @@ def tap_readme(app_name: str, tap_repo: str, version: str = "") -> str:
             "## Install",
             "",
             "```bash",
-            f"brew tap {tap_repo}",
+            f"brew tap {shorthand}",
             "brew install ai-proxy-hub",
             "```",
             "",

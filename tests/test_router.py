@@ -2043,7 +2043,7 @@ class PlatformSupportTest(unittest.TestCase):
             self.assertTrue(target_formula.exists())
             self.assertIn("class AiProxyHub < Formula", target_formula.read_text(encoding="utf-8"))
             tap_readme = (temp_path / "homebrew-tap" / "README.md").read_text(encoding="utf-8")
-            self.assertIn("brew tap weicj/homebrew-tap", tap_readme)
+            self.assertIn("brew tap weicj/tap", tap_readme)
             self.assertIn("brew install weicj/tap/ai-proxy-hub", tap_readme)
             self.assertTrue((temp_path / "homebrew-tap" / ".gitignore").exists())
 
