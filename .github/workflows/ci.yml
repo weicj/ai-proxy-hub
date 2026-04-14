@@ -32,8 +32,58 @@ jobs:
         run: python -m unittest discover -s tests -p "test_release_preflight.py" -v
       - name: Run remote smoke tests
         run: python -m unittest discover -s tests -p "test_remote_linux_smoke.py" -v
-      - name: Run router tests
-        run: python -m unittest discover -s tests -p "test_router.py" -v
+      - name: Run router unit tests
+        run: |
+          python - <<'PY'
+          import sys
+          import unittest
+
+          sys.path.insert(0, "tests")
+          suite = unittest.TestLoader().loadTestsFromNames(
+              [
+                  "test_router.ClientSwitchTest",
+                  "test_router.CodexSwitchTest",
+                  "test_router.CompatibilityLayerTest",
+                  "test_router.HandlerLoggingTest",
+                  "test_router.ProbeParsingTest",
+              ]
+          )
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          raise SystemExit(0 if result.wasSuccessful() else 1)
+          PY
+      - name: Run router platform tests
+        run: |
+          python - <<'PY'
+          import sys
+          import unittest
+
+          sys.path.insert(0, "tests")
+          suite = unittest.TestLoader().loadTestsFromName("test_router.PlatformSupportTest")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          raise SystemExit(0 if result.wasSuccessful() else 1)
+          PY
+      - name: Run router server tests
+        run: |
+          python - <<'PY'
+          import sys
+          import unittest
+
+          sys.path.insert(0, "tests")
+          suite = unittest.TestLoader().loadTestsFromName("test_router.RouterServerTest")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          raise SystemExit(0 if result.wasSuccessful() else 1)
+          PY
+      - name: Run router subscription tests
+        run: |
+          python - <<'PY'
+          import sys
+          import unittest
+
+          sys.path.insert(0, "tests")
+          suite = unittest.TestLoader().loadTestsFromName("test_router.SubscriptionRulesTest")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          raise SystemExit(0 if result.wasSuccessful() else 1)
+          PY
       - name: Verify packaging metadata
         run: python -m py_compile start.py router_server.py tests/test_router.py tests/test_release_preflight.py scripts/build_release.py scripts/verify_release_artifacts.py scripts/release_preflight.py scripts/sync_homebrew_tap.py
       - name: Release preflight
