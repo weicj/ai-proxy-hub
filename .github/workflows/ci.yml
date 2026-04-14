@@ -75,16 +75,37 @@ jobs:
           --name test_router.RouterServerTest.test_secondary_local_api_key_is_accepted_and_tracked
           --name test_router.RouterServerTest.test_service_control_endpoint_starts_forwarding_mode
           --name test_router.RouterServerTest.test_service_control_endpoint_starts_proxy_mode
-      - name: Run router server tests 4
+      - name: Run router server test attach external instance
         run: >-
           python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_service_controller_attaches_to_running_external_instance_on_port_conflict
+      - name: Run router server test runtime client endpoints
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_status_exposes_runtime_client_endpoints
+      - name: Run router server test upstream default model injection
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_upstream_default_model_is_injected_when_request_model_is_missing
+      - name: Run router server test upstream probe models
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_upstream_probe_returns_detected_model_ids
+      - name: Run router server test usage persistence
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_usage_and_stats_persist_after_store_restart
+      - name: Run router server test usage bucket precision
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_usage_ranges_use_expected_bucket_precision
+      - name: Run router server test usage by upstream
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_usage_series_counts_requests_by_upstream
+      - name: Run router server test usage by local key
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
           --name test_router.RouterServerTest.test_usage_series_tracks_secondary_local_key_dimension
       - name: Run router subscription tests
         run: python scripts/run_named_unittest.py --tests-dir tests --name test_router.SubscriptionRulesTest
