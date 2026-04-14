@@ -26,8 +26,14 @@ jobs:
         run: |
           python -m pip install .
           python -c "import shutil, subprocess; exe = shutil.which('ai-proxy-hub'); assert exe, 'ai-proxy-hub entrypoint missing'; subprocess.run([exe, '--version'], check=True)"
-      - name: Run tests
-        run: python -m unittest discover -s tests -v
+      - name: Run CLI tests
+        run: python -m unittest discover -s tests -p "test_cli_modern.py" -v
+      - name: Run release tests
+        run: python -m unittest discover -s tests -p "test_release_preflight.py" -v
+      - name: Run remote smoke tests
+        run: python -m unittest discover -s tests -p "test_remote_linux_smoke.py" -v
+      - name: Run router tests
+        run: python -m unittest discover -s tests -p "test_router.py" -v
       - name: Verify packaging metadata
         run: python -m py_compile start.py router_server.py tests/test_router.py tests/test_release_preflight.py scripts/build_release.py scripts/verify_release_artifacts.py scripts/release_preflight.py scripts/sync_homebrew_tap.py
       - name: Release preflight
