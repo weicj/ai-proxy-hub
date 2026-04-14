@@ -24,6 +24,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "bright_cyan",
         "brand_title": "bold white",
         "brand_subtitle": "dim",
+        "brand_meta": "grey70",
         "info": "cyan",
         "success": "green",
         "warning": "yellow",
@@ -44,6 +45,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "bright_cyan",
         "brand_title": "bold white",
         "brand_subtitle": "grey70",
+        "brand_meta": "grey58",
         "info": "bright_cyan",
         "success": "bright_green",
         "warning": "bright_yellow",
@@ -64,6 +66,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "blue",
         "brand_title": "bold black",
         "brand_subtitle": "grey50",
+        "brand_meta": "grey42",
         "info": "blue",
         "success": "green",
         "warning": "dark_orange",
@@ -84,6 +87,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "bright_blue",
         "brand_title": "bold white",
         "brand_subtitle": "bright_black",
+        "brand_meta": "grey70",
         "info": "bright_blue",
         "success": "green",
         "warning": "bright_yellow",
@@ -104,6 +108,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "green",
         "brand_title": "bold white",
         "brand_subtitle": "grey70",
+        "brand_meta": "grey70",
         "info": "green",
         "success": "bright_green",
         "warning": "yellow",
@@ -124,6 +129,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "dark_orange",
         "brand_title": "bold white",
         "brand_subtitle": "grey70",
+        "brand_meta": "grey70",
         "info": "dark_orange",
         "success": "green",
         "warning": "bright_yellow",
@@ -144,6 +150,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "magenta",
         "brand_title": "bold white",
         "brand_subtitle": "grey70",
+        "brand_meta": "grey70",
         "info": "magenta",
         "success": "green",
         "warning": "yellow",
@@ -164,6 +171,7 @@ CLI_THEME_PALETTES = {
         "brand_border": "bright_cyan",
         "brand_title": "bold white",
         "brand_subtitle": "grey70",
+        "brand_meta": "grey70",
         "info": "bright_cyan",
         "success": "green",
         "warning": "yellow",
@@ -256,6 +264,10 @@ class ModernCLI:
             justify=justify,
         )
         lines = [title, subtitle]
+        meta_lines_getter = getattr(self.app, "project_meta_lines", None)
+        if callable(meta_lines_getter):
+            for item in meta_lines_getter():
+                lines.append(Text(str(item), style=palette["brand_meta"], justify=justify))
         return Panel(
             Group(*lines),
             border_style=palette["brand_border"],

@@ -6,6 +6,13 @@ import errno
 APP_NAME = "AI Proxy Hub"
 APP_SLUG = "ai-proxy-hub"
 APP_VERSION = "0.3.0"
+APP_AUTHOR = "AI Proxy Hub contributors"
+APP_LICENSE_NAME = "Apache-2.0"
+APP_LICENSE_URL = "https://www.apache.org/licenses/LICENSE-2.0"
+APP_SOURCE_HOST = "GitHub"
+APP_REPOSITORY_URL = "https://github.com/weicj/ai-proxy-hub"
+APP_RELEASES_URL = "https://github.com/weicj/ai-proxy-hub/releases"
+APP_UPDATE_CHANNEL = "manual"
 CONFIG_VERSION = 7
 DEFAULT_LISTEN_HOST = "127.0.0.1"
 DEFAULT_LISTEN_PORT = 8787
@@ -124,6 +131,13 @@ __all__ = [
     "APP_NAME",
     "APP_SLUG",
     "APP_VERSION",
+    "APP_AUTHOR",
+    "APP_LICENSE_NAME",
+    "APP_LICENSE_URL",
+    "APP_SOURCE_HOST",
+    "APP_REPOSITORY_URL",
+    "APP_RELEASES_URL",
+    "APP_UPDATE_CHANNEL",
     "CONFIG_PATH_ENV_VAR",
     "CONFIG_VERSION",
     "DEFAULT_CLAUDE_SWITCH_BACKUP_FILENAME",

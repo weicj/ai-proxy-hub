@@ -40,7 +40,20 @@ from .config import (
     seed_config_path,
     write_json,
 )
-from .constants import APP_NAME, APP_SLUG, APP_VERSION, CONFIG_PATH_ENV_VAR, STATIC_DIR_ENV_VAR
+from .constants import (
+    APP_AUTHOR,
+    APP_LICENSE_NAME,
+    APP_LICENSE_URL,
+    APP_NAME,
+    APP_RELEASES_URL,
+    APP_REPOSITORY_URL,
+    APP_SLUG,
+    APP_SOURCE_HOST,
+    APP_UPDATE_CHANNEL,
+    APP_VERSION,
+    CONFIG_PATH_ENV_VAR,
+    STATIC_DIR_ENV_VAR,
+)
 from .console_i18n import CONSOLE_I18N
 from .entrypoints import (
     foreground_runtime_lines,
@@ -52,6 +65,7 @@ from .entrypoints import (
 )
 from .http_server import RouterHTTPServer, RouterRequestHandler, create_server
 from .network_runtime import client_display_name, display_runtime_host
+from .project_meta import project_metadata_payload
 from .protocols import normalize_upstream_protocol
 from .service_controller import ServiceController
 from .store import ConfigStore
@@ -59,8 +73,15 @@ from .store import ConfigStore
 __version__ = APP_VERSION
 
 __all__ = [
+    "APP_AUTHOR",
+    "APP_LICENSE_NAME",
+    "APP_LICENSE_URL",
     "APP_NAME",
+    "APP_RELEASES_URL",
+    "APP_REPOSITORY_URL",
     "APP_SLUG",
+    "APP_SOURCE_HOST",
+    "APP_UPDATE_CHANNEL",
     "APP_VERSION",
     "CONFIG_PATH_ENV_VAR",
     "CONSOLE_I18N",
@@ -101,6 +122,7 @@ __all__ = [
     "platform_family",
     "preferred_app_config_dir",
     "print_runtime_paths",
+    "project_metadata_payload",
     "read_toml_string_value",
     "resolve_config_path",
     "resolve_static_dir",

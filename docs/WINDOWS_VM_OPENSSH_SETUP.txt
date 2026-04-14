@@ -1,0 +1,65 @@
+Windows VM OpenSSH Setup for AI Proxy Hub
+=========================================
+
+Use an Administrator PowerShell window inside the Windows 11 VM.
+
+1. Check current OpenSSH capability status
+------------------------------------------
+
+Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*'
+
+
+2. Install and enable OpenSSH Server
+------------------------------------
+
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+Start-Service sshd
+Set-Service -Name sshd -StartupType Automatic
+
+if (!(Get-NetFirewallRule -Name "OpenSSH-Server-In-TCP" -ErrorAction SilentlyContinue)) {
+    New-NetFirewallRule -Name 'OpenSSH-Server-In-TCP' `
+      -DisplayName 'OpenSSH Server (sshd)' `
+      -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+}
+
+
+3. Verify that SSH is really listening
+--------------------------------------
+
+Get-Service sshd
+Get-NetFirewallRule -Name OpenSSH-Server-In-TCP
+netstat -ano | findstr :22
+
+
+4. If SSH still does not come up, run this again
+------------------------------------------------
+
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+Start-Service sshd
+Set-Service -Name sshd -StartupType Automatic
+
+
+5. Expected result
+------------------
+
+- Get-Service sshd should show: Running
+- netstat should show: 0.0.0.0:22 or 192.168.x.x:22
+
+
+6. After it works, tell me these items
+--------------------------------------
+
+- Windows username
+- Windows VM IP address
+- Whether port 22 is direct or forwarded
+
+
+7. Then I will test from the outside with commands like
+-------------------------------------------------------
+
+ssh <windows_user>@<windows_vm_ip>
+
+or, if we must jump through the Ubuntu host:
+
+ssh -J max@192.168.1.21 <windows_user>@<windows_vm_ip>

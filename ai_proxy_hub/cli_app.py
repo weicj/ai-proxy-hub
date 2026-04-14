@@ -47,6 +47,7 @@ from .constants import DEFAULT_LISTEN_PORT, UPSTREAM_PROTOCOL_ORDER
 from .local_keys import normalize_local_key_protocols
 from .network import client_display_name, perform_upstream_probe_request
 from .protocols import normalize_upstream_protocol
+from .project_meta import project_metadata_payload
 from .service_controller import ServiceController
 from .store import ConfigStore
 
@@ -354,6 +355,34 @@ class InteractiveConsoleApp:
             "value": self.tr("runtime_source_external", url=attached_url, path=self.config_path),
         }
 
+    def project_metadata(self) -> Dict[str, Any]:
+        return project_metadata_payload()
+
+    def project_meta_lines(self) -> List[str]:
+        meta = self.project_metadata()
+        source = meta.get("source") or {}
+        updates = meta.get("updates") or {}
+        source_label = source.get("host") if source.get("configured") else self.tr("project_meta_source_pending")
+        update_label = str(updates.get("channel") or "")
+        if update_label == "manual":
+            update_label = self.tr("project_meta_updates_manual")
+        elif not updates.get("configured"):
+            update_label = self.tr("project_meta_updates_pending")
+        line_one = " · ".join(
+            [
+                f"v{meta.get('version') or '-'}",
+                str(meta.get("license", {}).get("name") or self.tr("project_meta_license")),
+                str(update_label),
+            ]
+        )
+        line_two = " · ".join(
+            [
+                f"{self.tr('project_meta_author')}: {meta.get('author') or '-'}",
+                str(source_label),
+            ]
+        )
+        return [line_one, line_two]
+
     def _runtime_apply_enabled(self, snapshot: Dict[str, Any]) -> bool:
         service = snapshot.get("service") or {}
         if str(service.get("owner") or "local") == "external":
@@ -538,6 +567,8 @@ class InteractiveConsoleApp:
         print()
         self.print_info(divider)
         self.print_info(self.tr("title"))
+        for line in self.project_meta_lines():
+            self.print_info(line)
         self.print_info(f"{source['label']}: {source['value']}")
         self.print_info(service_label)
         if active_protocols:

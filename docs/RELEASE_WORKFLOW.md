@@ -12,9 +12,7 @@ This project uses two parallel directory trees on the maintainer machine:
 1. Verify the development workspace.
 
 ```bash
-python3 -m unittest discover -s tests -v
-python3 scripts/build_release.py --version 0.3.0 --output-dir dist
-python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.0
+python3 scripts/release_preflight.py --version 0.3.0
 ```
 
 2. Sync the current source into the local release workspace.
@@ -35,8 +33,8 @@ Suggested layout:
 
 4. Run external smoke tests.
 
-- Linux: use [run_remote_linux_smoke.py](/Users/max/ai-proxy-hub/scripts/run_remote_linux_smoke.py)
-- Windows: use the checklist in [EXTERNAL_TEST_ENV.md](/Users/max/ai-proxy-hub/docs/EXTERNAL_TEST_ENV.md)
+- Linux: use [run_remote_linux_smoke.py](/Users/max/ai-proxy-hub/scripts/run_remote_linux_smoke.py) with `--identity-file` and optional repeated `--ssh-option` values when the remote host needs an explicit SSH key or custom SSH transport settings
+- Windows: use the checklist in [EXTERNAL_TEST_ENV.md](/Users/max/ai-proxy-hub/docs/EXTERNAL_TEST_ENV.md); a reachable Windows VM is an acceptable release target
 
 5. Update release notes.
 

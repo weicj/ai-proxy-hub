@@ -22,7 +22,7 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-  "rich>=13,<15",
+  "rich>=13,<14",
 ]
 
 [project.scripts]

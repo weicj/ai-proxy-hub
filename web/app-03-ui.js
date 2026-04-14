@@ -4,6 +4,8 @@ function renderStaticTexts() {
   document.documentElement.lang = currentLanguage() === "zh" ? "zh-CN" : "en";
   document.getElementById("appTitle").textContent = t("appTitle");
   document.getElementById("appSubtitle").textContent = t("appSubtitle");
+  setIconLabel("projectMetaTitle", "info", t("projectMetaTitle"), "icon icon-md");
+  document.getElementById("projectMetaHint").textContent = t("projectMetaHint");
   setIconLabel("workspaceTitle", "layout", t("workspaceTitle"), "icon icon-md");
   document.getElementById("workspaceHint").textContent = t("workspaceHint");
   document.getElementById("workspaceCollapsedHint").textContent = t("workspaceCollapsedHint");
@@ -76,6 +78,56 @@ function renderStaticTexts() {
   document.getElementById("protocol_listen_host").placeholder = t("listenHostPlaceholder");
   document.getElementById("global_default_model").placeholder = defaultModelPlaceholder();
   document.getElementById("usageLocalKeyInput").placeholder = t("usageLocalKeyFilterPlaceholder");
+}
+
+function renderProjectMeta() {
+  const meta = state.status?.app || {};
+  const license = meta.license || {};
+  const source = meta.source || {};
+  const updates = meta.updates || {};
+  const badges = [
+    [t("projectMetaVersion"), `v${meta.version || "-"}`],
+    [t("projectMetaConfigVersion"), `v${meta.config_version || "-"}`],
+    [t("projectMetaLicense"), license.name || "-"],
+    [t("projectMetaAuthor"), meta.author || "-"],
+    [t("projectMetaSource"), source.configured ? (source.host || "GitHub") : t("projectMetaSourcePending")],
+    [
+      t("projectMetaUpdates"),
+      updates.channel === "manual"
+        ? t("projectMetaUpdatesManual")
+        : updates.configured
+          ? String(updates.channel || "-")
+          : t("projectMetaUpdatesPending"),
+    ],
+  ];
+  document.getElementById("projectMetaBadges").innerHTML = badges.map(([label, value]) => `
+    <div class="project-meta-chip">
+      <span class="project-meta-chip-label">${escapeHtml(label)}</span>
+      <strong class="project-meta-chip-value">${escapeHtml(value)}</strong>
+    </div>
+  `).join("");
+
+  const links = [];
+  if (license.url) {
+    links.push(
+      `<a class="secondary project-meta-link" href="${escapeHtml(license.url)}" target="_blank" rel="noreferrer noopener">${buttonLabelMarkup("check", t("projectMetaLicenseLink"))}</a>`,
+    );
+  }
+  if (source.configured && source.url) {
+    links.push(
+      `<a class="secondary project-meta-link" href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer noopener">${buttonLabelMarkup("cloud", t("projectMetaSourceLink"))}</a>`,
+    );
+  } else {
+    links.push(`<span class="project-meta-link muted">${escapeHtml(t("projectMetaSourcePending"))}</span>`);
+  }
+  if (updates.configured && updates.url) {
+    links.push(
+      `<a class="secondary project-meta-link" href="${escapeHtml(updates.url)}" target="_blank" rel="noreferrer noopener">${buttonLabelMarkup("download", t("projectMetaUpdatesLink"))}</a>`,
+    );
+  } else {
+    links.push(`<span class="project-meta-link muted">${escapeHtml(t("projectMetaUpdatesPending"))}</span>`);
+  }
+  document.getElementById("projectMetaLinks").innerHTML = links.join("");
 }
 
 function renderProtocolTabs() {

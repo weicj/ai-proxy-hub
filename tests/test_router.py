@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 import socket
 import sys
@@ -72,6 +73,8 @@ from ai_proxy_hub.cli_local_keys import build_local_key_entry, parse_allowed_pro
 from ai_proxy_hub.cli_usage import prepare_usage_chart_data  # noqa: E402
 from ai_proxy_hub.entrypoints import foreground_runtime_lines as entrypoint_foreground_runtime_lines  # noqa: E402
 from ai_proxy_hub.entrypoints import parse_args as entrypoint_parse_args  # noqa: E402
+from ai_proxy_hub.entrypoints import print_runtime_paths as entrypoint_print_runtime_paths  # noqa: E402
+from ai_proxy_hub.entrypoints import write_runtime_line as entrypoint_write_runtime_line  # noqa: E402
 
 
 def make_upstream_server(routes, call_log):
@@ -1725,9 +1728,49 @@ class PlatformSupportTest(unittest.TestCase):
         self.assertIn("API: shared 127.0.0.1:8787 | Codex /openai | Claude /claude | Gemini /gemini", lines[3])
         self.assertIn("本地 Keys: 1 | 主 Key sk-local-123...cdef", lines[4])
 
+    def test_write_runtime_line_falls_back_to_stdout_buffer_on_unicode_encode_error(self):
+        class BrokenStdout:
+            def __init__(self):
+                self.buffer = io.BytesIO()
+                self.flush_count = 0
+
+            def write(self, _value):
+                raise UnicodeEncodeError("cp1252", "已", 0, 1, "character maps to <undefined>")
+
+            def flush(self):
+                self.flush_count += 1
+
+        stdout = BrokenStdout()
+        with mock.patch.object(sys, "stdout", stdout):
+            entrypoint_write_runtime_line("AI Proxy Hub 已启动")
+        self.assertIn("AI Proxy Hub 已启动", stdout.buffer.getvalue().decode("utf-8"))
+        self.assertEqual(stdout.flush_count, 1)
+
+    def test_print_runtime_paths_includes_project_metadata(self):
+        buffer = io.StringIO()
+        with mock.patch("sys.stdout", buffer):
+            entrypoint_print_runtime_paths(self.config_path, PROJECT_ROOT / "web")
+        payload = json.loads(buffer.getvalue())
+        self.assertEqual(payload["project"]["version"], payload["version"])
+        self.assertEqual(payload["project"]["license"]["name"], "Apache-2.0")
+        self.assertTrue(payload["project"]["source"]["configured"])
+        self.assertEqual(payload["project"]["source"]["url"], "https://github.com/weicj/ai-proxy-hub")
+        self.assertEqual(payload["project"]["updates"]["url"], "https://github.com/weicj/ai-proxy-hub/releases")
+        self.assertEqual(payload["project"]["updates"]["channel"], "manual")
+
     def test_app_config_dir_linux_prefers_xdg(self):
         path = app_config_dir(home=Path("/home/demo"), env={"XDG_CONFIG_HOME": "/tmp/xdg"}, family="linux")
         self.assertEqual(path, Path("/tmp/xdg") / APP_SLUG)
+
+    def test_status_payload_includes_project_metadata(self):
+        app = self.make_console_app(ui_language="en")
+        status = app.store.get_status("127.0.0.1", 8787, service_state="stopped")
+        self.assertEqual(status["app"]["name"], APP_NAME)
+        self.assertEqual(status["app"]["license"]["name"], "Apache-2.0")
+        self.assertTrue(status["app"]["source"]["configured"])
+        self.assertEqual(status["app"]["source"]["url"], "https://github.com/weicj/ai-proxy-hub")
+        self.assertEqual(status["app"]["updates"]["url"], "https://github.com/weicj/ai-proxy-hub/releases")
+        self.assertEqual(status["app"]["updates"]["channel"], "manual")
 
     def test_app_config_dir_macos_uses_application_support(self):
         path = app_config_dir(home=Path("/Users/demo"), env={}, family="macos")

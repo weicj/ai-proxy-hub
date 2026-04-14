@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from .constants import DEFAULT_ROUTING_MODE, ROUTING_MODE_LABELS, UPSTREAM_PROTOCOL_ORDER
 from .local_keys import normalize_local_key_protocols, primary_local_api_key_entry
+from .project_meta import project_metadata_payload
 from .protocols import normalize_upstream_protocol
 from .store_helpers import status_runtime_payload, usage_series_payload
 
@@ -219,6 +220,7 @@ def get_status(
         service_details=service_details,
     )
     return {
+        "app": project_metadata_payload(),
         "config": store.get_config(),
         "runtime": status_runtime_payload(store.config, runtime_host, runtime_urls),
         "service": {

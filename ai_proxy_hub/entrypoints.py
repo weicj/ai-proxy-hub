@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Optional
@@ -24,8 +25,15 @@ from .config import (
     seed_config_path,
 )
 from .constants import (
+    APP_AUTHOR,
+    APP_LICENSE_NAME,
+    APP_LICENSE_URL,
     APP_NAME,
+    APP_RELEASES_URL,
+    APP_REPOSITORY_URL,
     APP_SLUG,
+    APP_SOURCE_HOST,
+    APP_UPDATE_CHANNEL,
     APP_VERSION,
     CONFIG_PATH_ENV_VAR,
     LEGACY_CONFIG_PATH_ENV_VARS,
@@ -33,6 +41,7 @@ from .constants import (
     STATIC_DIR_ENV_VAR,
 )
 from .network_runtime import display_runtime_host
+from .project_meta import project_metadata_payload
 from .runtime import ConfigStore
 from .service import ServiceController
 
@@ -69,6 +78,13 @@ def print_runtime_paths(config_path: Path, static_dir: Path) -> None:
     payload = {
         "app_name": APP_NAME,
         "version": APP_VERSION,
+        "author": APP_AUTHOR,
+        "license": APP_LICENSE_NAME,
+        "license_url": APP_LICENSE_URL,
+        "source_host": APP_SOURCE_HOST,
+        "repository_url": APP_REPOSITORY_URL,
+        "releases_url": APP_RELEASES_URL,
+        "update_channel": APP_UPDATE_CHANNEL,
         "platform": platform_family(),
         "config_path": str(config_path),
         "preferred_app_config_dir": str(preferred_app_config_dir()),
@@ -83,6 +99,7 @@ def print_runtime_paths(config_path: Path, static_dir: Path) -> None:
         "static_override_env": STATIC_DIR_ENV_VAR,
         "legacy_config_override_envs": list(LEGACY_CONFIG_PATH_ENV_VARS),
         "legacy_static_override_envs": list(LEGACY_STATIC_DIR_ENV_VARS),
+        "project": project_metadata_payload(),
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
 
@@ -92,6 +109,19 @@ def _mask_secret(value: str) -> str:
     if len(text) <= 18:
         return text or "-"
     return f"{text[:12]}...{text[-4:]}"
+
+
+def write_runtime_line(text: str) -> None:
+    line = f"{text}\n"
+    try:
+        sys.stdout.write(line)
+    except UnicodeEncodeError:
+        buffer = getattr(sys.stdout, "buffer", None)
+        if buffer is not None:
+            buffer.write(line.encode("utf-8", errors="replace"))
+        else:
+            sys.stdout.write(line.encode("ascii", errors="backslashreplace").decode("ascii"))
+    sys.stdout.flush()
 
 
 def foreground_runtime_lines(config_path: Path, runtime: dict, config: dict) -> list[str]:
@@ -147,12 +177,13 @@ def serve_foreground(config_path: Path, static_dir: Path, host: Optional[str], p
 
     runtime = controller.runtime_info()
     for line in foreground_runtime_lines(config_path, runtime, config):
-        print(line)
+        write_runtime_line(line)
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("\n已停止。")
+        write_runtime_line("")
+        write_runtime_line("已停止。")
     finally:
         controller.shutdown()
 
@@ -179,4 +210,5 @@ __all__ = [
     "print_runtime_paths",
     "resolve_config_path",
     "serve_foreground",
+    "write_runtime_line",
 ]

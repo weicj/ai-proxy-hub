@@ -47,6 +47,19 @@ AI Proxy Hub is built for that transition point. It keeps the client-facing side
 
 ### Web dashboard
 
+<table>
+  <tr>
+    <td><strong>Runtime overview</strong><br><img src="docs/screenshots/en/overview.png" alt="AI Proxy Hub runtime overview" width="100%"></td>
+    <td><strong>Codex workspace</strong><br><img src="docs/screenshots/en/codex-workspace.png" alt="AI Proxy Hub Codex workspace" width="100%"></td>
+    <td><strong>Claude workspace</strong><br><img src="docs/screenshots/en/claude-workspace.png" alt="AI Proxy Hub Claude workspace" width="100%"></td>
+  </tr>
+  <tr>
+    <td><strong>Local API key management</strong><br><img src="docs/screenshots/en/local-keys.png" alt="AI Proxy Hub local API key management" width="100%"></td>
+    <td><strong>Subscription editor</strong><br><img src="docs/screenshots/en/subscription-editor.png" alt="AI Proxy Hub subscription editor" width="100%"></td>
+    <td><strong>Global usage analytics</strong><br><img src="docs/screenshots/en/usage-analytics.png" alt="AI Proxy Hub usage analytics" width="100%"></td>
+  </tr>
+</table>
+
 The Web dashboard is designed as an operational console rather than a static settings page. It surfaces:
 
 - runtime overview and service state
@@ -57,6 +70,8 @@ The Web dashboard is designed as an operational console rather than a static set
 - import, export, and runtime control actions
 
 ### Interactive CLI
+
+<p><img src="docs/screenshots/en/cli-main.svg" alt="AI Proxy Hub CLI main menu" width="100%"></p>
 
 The CLI is designed for terminal-first administration, especially for SSH-driven workflows. It provides:
 
@@ -431,6 +446,12 @@ python3 scripts/build_release.py --version 0.3.0
 python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.0
 ```
 
+### Run release preflight
+
+```bash
+python3 scripts/release_preflight.py --version 0.3.0
+```
+
 ### Sync the current source tree into the local release workspace
 
 ```bash
@@ -442,6 +463,7 @@ python3 scripts/sync_release_snapshot.py --version 0.3.0
 ```bash
 python3 scripts/run_remote_linux_smoke.py \
   --ssh user@linux-host \
+  --identity-file ~/.ssh/id_ed25519 \
   --artifact dist/ai-proxy-hub-0.3.0.tar.gz
 ```
 

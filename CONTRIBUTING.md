@@ -35,11 +35,11 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/<owner>/ai-proxy-hub.git
+git clone https://github.com/weicj/ai-proxy-hub.git
 cd ai-proxy-hub
 
 # 安装依赖
-pip install rich
+python3 -m pip install -e .
 
 # 运行测试
 python3 -m unittest discover -s tests -v

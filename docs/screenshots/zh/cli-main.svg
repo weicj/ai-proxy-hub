@@ -1,0 +1,170 @@
+<svg class="rich-terminal" viewBox="0 0 994 733.1999999999999" xmlns="http://www.w3.org/2000/svg">
+    <!-- Generated with Rich https://www.textualize.io -->
+    <style>
+
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Regular"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Regular.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Regular.woff") format("woff");
+        font-style: normal;
+        font-weight: 400;
+    }
+    @font-face {
+        font-family: "Fira Code";
+        src: local("FiraCode-Bold"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff2/FiraCode-Bold.woff2") format("woff2"),
+                url("https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/woff/FiraCode-Bold.woff") format("woff");
+        font-style: bold;
+        font-weight: 700;
+    }
+
+    .terminal-1930458542-matrix {
+        font-family: Fira Code, monospace;
+        font-size: 20px;
+        line-height: 24.4px;
+        font-variant-east-asian: full-width;
+    }
+
+    .terminal-1930458542-title {
+        font-size: 18px;
+        font-weight: bold;
+        font-family: arial;
+    }
+
+    .terminal-1930458542-r1 { fill: #1984e9 }
+.terminal-1930458542-r2 { fill: #c5c8c6 }
+.terminal-1930458542-r3 { fill: #c5c8c6;font-weight: bold }
+.terminal-1930458542-r4 { fill: #9a9b99 }
+.terminal-1930458542-r5 { fill: #1984e9;font-weight: bold }
+    </style>
+
+    <defs>
+    <clipPath id="terminal-1930458542-clip-terminal">
+      <rect x="0" y="0" width="975.0" height="682.1999999999999" />
+    </clipPath>
+    <clipPath id="terminal-1930458542-line-0">
+    <rect x="0" y="1.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-1">
+    <rect x="0" y="25.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-2">
+    <rect x="0" y="50.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-3">
+    <rect x="0" y="74.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-4">
+    <rect x="0" y="99.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-5">
+    <rect x="0" y="123.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-6">
+    <rect x="0" y="147.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-7">
+    <rect x="0" y="172.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-8">
+    <rect x="0" y="196.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-9">
+    <rect x="0" y="221.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-10">
+    <rect x="0" y="245.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-11">
+    <rect x="0" y="269.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-12">
+    <rect x="0" y="294.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-13">
+    <rect x="0" y="318.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-14">
+    <rect x="0" y="343.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-15">
+    <rect x="0" y="367.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-16">
+    <rect x="0" y="391.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-17">
+    <rect x="0" y="416.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-18">
+    <rect x="0" y="440.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-19">
+    <rect x="0" y="465.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-20">
+    <rect x="0" y="489.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-21">
+    <rect x="0" y="513.9" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-22">
+    <rect x="0" y="538.3" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-23">
+    <rect x="0" y="562.7" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-24">
+    <rect x="0" y="587.1" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-25">
+    <rect x="0" y="611.5" width="976" height="24.65"/>
+            </clipPath>
+<clipPath id="terminal-1930458542-line-26">
+    <rect x="0" y="635.9" width="976" height="24.65"/>
+            </clipPath>
+    </defs>
+
+    <rect fill="#292929" stroke="rgba(255,255,255,0.35)" stroke-width="1" x="1" y="1" width="992" height="731.2" rx="8"/><text class="terminal-1930458542-title" fill="#c5c8c6" text-anchor="middle" x="496" y="27">AI&#160;Proxy&#160;Hub&#160;CLI&#160;(zh)</text>
+            <g transform="translate(26,22)">
+            <circle cx="0" cy="0" r="7" fill="#ff5f57"/>
+            <circle cx="22" cy="0" r="7" fill="#febc2e"/>
+            <circle cx="44" cy="0" r="7" fill="#28c840"/>
+            </g>
+        
+    <g transform="translate(9, 41)" clip-path="url(#terminal-1930458542-clip-terminal)">
+    <rect fill="#1984e9" x="24.4" y="489.5" width="36.6" height="24.65" shape-rendering="crispEdges"/><rect fill="#608ab1" x="24.4" y="513.9" width="36.6" height="24.65" shape-rendering="crispEdges"/><rect fill="#608ab1" x="24.4" y="538.3" width="36.6" height="24.65" shape-rendering="crispEdges"/><rect fill="#608ab1" x="24.4" y="562.7" width="36.6" height="24.65" shape-rendering="crispEdges"/><rect fill="#608ab1" x="24.4" y="587.1" width="36.6" height="24.65" shape-rendering="crispEdges"/><rect fill="#608ab1" x="24.4" y="611.5" width="36.6" height="24.65" shape-rendering="crispEdges"/><rect fill="#608ab1" x="24.4" y="635.9" width="36.6" height="24.65" shape-rendering="crispEdges"/>
+    <g class="terminal-1930458542-matrix">
+    <text class="terminal-1930458542-r1" x="0" y="20" textLength="976" clip-path="url(#terminal-1930458542-line-0)">╭──────────────────────────────────────────────────────────────────────────────╮</text><text class="terminal-1930458542-r2" x="976" y="20" textLength="12.2" clip-path="url(#terminal-1930458542-line-0)">
+</text><text class="terminal-1930458542-r1" x="0" y="44.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-1)">│</text><text class="terminal-1930458542-r3" x="24.4" y="44.4" textLength="927.2" clip-path="url(#terminal-1930458542-line-1)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;AI&#160;Proxy&#160;Hub&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="44.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-1)">│</text><text class="terminal-1930458542-r2" x="976" y="44.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-1)">
+</text><text class="terminal-1930458542-r1" x="0" y="68.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-2)">│</text><text class="terminal-1930458542-r4" x="24.4" y="68.8" textLength="854" clip-path="url(#terminal-1930458542-line-2)">&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;Codex&#160;·&#160;Claude&#160;·&#160;Gemini&#160;本地控制中心&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="68.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-2)">│</text><text class="terminal-1930458542-r2" x="976" y="68.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-2)">
+</text><text class="terminal-1930458542-r1" x="0" y="93.2" textLength="976" clip-path="url(#terminal-1930458542-line-3)">╰──────────────────────────────────────────────────────────────────────────────╯</text><text class="terminal-1930458542-r2" x="976" y="93.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-3)">
+</text><text class="terminal-1930458542-r2" x="976" y="117.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-4)">
+</text><text class="terminal-1930458542-r1" x="0" y="142" textLength="24.4" clip-path="url(#terminal-1930458542-line-5)">╭─</text><text class="terminal-1930458542-r1" x="24.4" y="142" textLength="402.6" clip-path="url(#terminal-1930458542-line-5)">─────────────────────────────────</text><text class="terminal-1930458542-r5" x="439.2" y="142" textLength="48.8" clip-path="url(#terminal-1930458542-line-5)">系统状态</text><text class="terminal-1930458542-r1" x="549" y="142" textLength="402.6" clip-path="url(#terminal-1930458542-line-5)">─────────────────────────────────</text><text class="terminal-1930458542-r1" x="951.6" y="142" textLength="24.4" clip-path="url(#terminal-1930458542-line-5)">─╮</text><text class="terminal-1930458542-r2" x="976" y="142" textLength="12.2" clip-path="url(#terminal-1930458542-line-5)">
+</text><text class="terminal-1930458542-r1" x="0" y="166.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-6)">│</text><text class="terminal-1930458542-r1" x="24.4" y="166.4" textLength="146.4" clip-path="url(#terminal-1930458542-line-6)">服务&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="166.4" textLength="695.4" clip-path="url(#terminal-1930458542-line-6)">🟢&#160;运行中&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="166.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-6)">│</text><text class="terminal-1930458542-r2" x="976" y="166.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-6)">
+</text><text class="terminal-1930458542-r1" x="0" y="190.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-7)">│</text><text class="terminal-1930458542-r1" x="24.4" y="190.8" textLength="122" clip-path="url(#terminal-1930458542-line-7)">配置文件&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="190.8" textLength="744.2" clip-path="url(#terminal-1930458542-line-7)">/tmp/ai-proxy-hub-docshots/demo-cli-zh.json&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="190.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-7)">│</text><text class="terminal-1930458542-r2" x="976" y="190.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-7)">
+</text><text class="terminal-1930458542-r1" x="0" y="215.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-8)">│</text><text class="terminal-1930458542-r1" x="24.4" y="215.2" textLength="134.2" clip-path="url(#terminal-1930458542-line-8)">Web&#160;控制台&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="215.2" textLength="744.2" clip-path="url(#terminal-1930458542-line-8)">http://127.0.0.1:8895/&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="215.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-8)">│</text><text class="terminal-1930458542-r2" x="976" y="215.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-8)">
+</text><text class="terminal-1930458542-r1" x="0" y="239.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-9)">│</text><text class="terminal-1930458542-r1" x="24.4" y="239.6" textLength="134.2" clip-path="url(#terminal-1930458542-line-9)">已启动&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="239.6" textLength="744.2" clip-path="url(#terminal-1930458542-line-9)">Codex,&#160;Claude,&#160;Gemini&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="239.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-9)">│</text><text class="terminal-1930458542-r2" x="976" y="239.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-9)">
+</text><text class="terminal-1930458542-r1" x="0" y="264" textLength="12.2" clip-path="url(#terminal-1930458542-line-10)">│</text><text class="terminal-1930458542-r1" x="24.4" y="264" textLength="170.8" clip-path="url(#terminal-1930458542-line-10)">Codex&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="264" textLength="695.4" clip-path="url(#terminal-1930458542-line-10)">⚪&#160;未接入&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="264" textLength="12.2" clip-path="url(#terminal-1930458542-line-10)">│</text><text class="terminal-1930458542-r2" x="976" y="264" textLength="12.2" clip-path="url(#terminal-1930458542-line-10)">
+</text><text class="terminal-1930458542-r1" x="0" y="288.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-11)">│</text><text class="terminal-1930458542-r1" x="24.4" y="288.4" textLength="170.8" clip-path="url(#terminal-1930458542-line-11)">Claude&#160;Code&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="288.4" textLength="695.4" clip-path="url(#terminal-1930458542-line-11)">⚪&#160;未接入&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="288.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-11)">│</text><text class="terminal-1930458542-r2" x="976" y="288.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-11)">
+</text><text class="terminal-1930458542-r1" x="0" y="312.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-12)">│</text><text class="terminal-1930458542-r1" x="24.4" y="312.8" textLength="170.8" clip-path="url(#terminal-1930458542-line-12)">Gemini&#160;CLI&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="312.8" textLength="695.4" clip-path="url(#terminal-1930458542-line-12)">⚪&#160;未接入&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="312.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-12)">│</text><text class="terminal-1930458542-r2" x="976" y="312.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-12)">
+</text><text class="terminal-1930458542-r1" x="0" y="337.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-13)">│</text><text class="terminal-1930458542-r1" x="24.4" y="337.2" textLength="170.8" clip-path="url(#terminal-1930458542-line-13)">Codex&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="337.2" textLength="634.4" clip-path="url(#terminal-1930458542-line-13)">2&#160;个上游&#160;·&#160;自动&#160;/&#160;顺序优先&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="337.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-13)">│</text><text class="terminal-1930458542-r2" x="976" y="337.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-13)">
+</text><text class="terminal-1930458542-r1" x="0" y="361.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-14)">│</text><text class="terminal-1930458542-r1" x="24.4" y="361.6" textLength="170.8" clip-path="url(#terminal-1930458542-line-14)">Claude&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="361.6" textLength="610" clip-path="url(#terminal-1930458542-line-14)">2&#160;个上游&#160;·&#160;自动&#160;/&#160;网络质量优先&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="361.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-14)">│</text><text class="terminal-1930458542-r2" x="976" y="361.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-14)">
+</text><text class="terminal-1930458542-r1" x="0" y="386" textLength="12.2" clip-path="url(#terminal-1930458542-line-15)">│</text><text class="terminal-1930458542-r1" x="24.4" y="386" textLength="170.8" clip-path="url(#terminal-1930458542-line-15)">Gemini&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="386" textLength="658.8" clip-path="url(#terminal-1930458542-line-15)">2&#160;个上游&#160;·&#160;手动控制&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="386" textLength="12.2" clip-path="url(#terminal-1930458542-line-15)">│</text><text class="terminal-1930458542-r2" x="976" y="386" textLength="12.2" clip-path="url(#terminal-1930458542-line-15)">
+</text><text class="terminal-1930458542-r1" x="0" y="410.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-16)">│</text><text class="terminal-1930458542-r1" x="24.4" y="410.4" textLength="146.4" clip-path="url(#terminal-1930458542-line-16)">本地&#160;LLM&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r2" x="207.4" y="410.4" textLength="634.4" clip-path="url(#terminal-1930458542-line-16)">0&#160;个上游&#160;·&#160;自动&#160;/&#160;顺序优先&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text><text class="terminal-1930458542-r1" x="963.8" y="410.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-16)">│</text><text class="terminal-1930458542-r2" x="976" y="410.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-16)">
+</text><text class="terminal-1930458542-r1" x="0" y="434.8" textLength="976" clip-path="url(#terminal-1930458542-line-17)">╰──────────────────────────────────────────────────────────────────────────────╯</text><text class="terminal-1930458542-r2" x="976" y="434.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-17)">
+</text><text class="terminal-1930458542-r2" x="976" y="459.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-18)">
+</text><text class="terminal-1930458542-r1" x="0" y="483.6" textLength="24.4" clip-path="url(#terminal-1930458542-line-19)">╭─</text><text class="terminal-1930458542-r1" x="24.4" y="483.6" textLength="427" clip-path="url(#terminal-1930458542-line-19)">───────────────────────────────────</text><text class="terminal-1930458542-r5" x="463.6" y="483.6" textLength="24.4" clip-path="url(#terminal-1930458542-line-19)">菜单</text><text class="terminal-1930458542-r1" x="524.6" y="483.6" textLength="427" clip-path="url(#terminal-1930458542-line-19)">───────────────────────────────────</text><text class="terminal-1930458542-r1" x="951.6" y="483.6" textLength="24.4" clip-path="url(#terminal-1930458542-line-19)">─╮</text><text class="terminal-1930458542-r2" x="976" y="483.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-19)">
+</text><text class="terminal-1930458542-r1" x="0" y="508" textLength="12.2" clip-path="url(#terminal-1930458542-line-20)">│</text><text class="terminal-1930458542-r3" x="24.4" y="508" textLength="36.6" clip-path="url(#terminal-1930458542-line-20)">&#160;1&#160;</text><text class="terminal-1930458542-r5" x="73.2" y="508" textLength="122" clip-path="url(#terminal-1930458542-line-20)">打开&#160;Web&#160;控制台</text><text class="terminal-1930458542-r1" x="963.8" y="508" textLength="12.2" clip-path="url(#terminal-1930458542-line-20)">│</text><text class="terminal-1930458542-r2" x="976" y="508" textLength="12.2" clip-path="url(#terminal-1930458542-line-20)">
+</text><text class="terminal-1930458542-r1" x="0" y="532.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-21)">│</text><text class="terminal-1930458542-r3" x="24.4" y="532.4" textLength="36.6" clip-path="url(#terminal-1930458542-line-21)">&#160;2&#160;</text><text class="terminal-1930458542-r2" x="73.2" y="532.4" textLength="61" clip-path="url(#terminal-1930458542-line-21)">运行与设置</text><text class="terminal-1930458542-r1" x="963.8" y="532.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-21)">│</text><text class="terminal-1930458542-r2" x="976" y="532.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-21)">
+</text><text class="terminal-1930458542-r1" x="0" y="556.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-22)">│</text><text class="terminal-1930458542-r3" x="24.4" y="556.8" textLength="36.6" clip-path="url(#terminal-1930458542-line-22)">&#160;3&#160;</text><text class="terminal-1930458542-r2" x="73.2" y="556.8" textLength="61" clip-path="url(#terminal-1930458542-line-22)">协议工作区</text><text class="terminal-1930458542-r1" x="963.8" y="556.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-22)">│</text><text class="terminal-1930458542-r2" x="976" y="556.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-22)">
+</text><text class="terminal-1930458542-r1" x="0" y="581.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-23)">│</text><text class="terminal-1930458542-r3" x="24.4" y="581.2" textLength="36.6" clip-path="url(#terminal-1930458542-line-23)">&#160;4&#160;</text><text class="terminal-1930458542-r2" x="73.2" y="581.2" textLength="134.2" clip-path="url(#terminal-1930458542-line-23)">本地&#160;API&#160;Keys</text><text class="terminal-1930458542-r1" x="963.8" y="581.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-23)">│</text><text class="terminal-1930458542-r2" x="976" y="581.2" textLength="12.2" clip-path="url(#terminal-1930458542-line-23)">
+</text><text class="terminal-1930458542-r1" x="0" y="605.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-24)">│</text><text class="terminal-1930458542-r3" x="24.4" y="605.6" textLength="36.6" clip-path="url(#terminal-1930458542-line-24)">&#160;5&#160;</text><text class="terminal-1930458542-r2" x="73.2" y="605.6" textLength="48.8" clip-path="url(#terminal-1930458542-line-24)">用量统计</text><text class="terminal-1930458542-r1" x="963.8" y="605.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-24)">│</text><text class="terminal-1930458542-r2" x="976" y="605.6" textLength="12.2" clip-path="url(#terminal-1930458542-line-24)">
+</text><text class="terminal-1930458542-r1" x="0" y="630" textLength="12.2" clip-path="url(#terminal-1930458542-line-25)">│</text><text class="terminal-1930458542-r3" x="24.4" y="630" textLength="36.6" clip-path="url(#terminal-1930458542-line-25)">&#160;6&#160;</text><text class="terminal-1930458542-r2" x="73.2" y="630" textLength="134.2" clip-path="url(#terminal-1930458542-line-25)">语言&#160;/&#160;CLI&#160;主题</text><text class="terminal-1930458542-r1" x="963.8" y="630" textLength="12.2" clip-path="url(#terminal-1930458542-line-25)">│</text><text class="terminal-1930458542-r2" x="976" y="630" textLength="12.2" clip-path="url(#terminal-1930458542-line-25)">
+</text><text class="terminal-1930458542-r1" x="0" y="654.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-26)">│</text><text class="terminal-1930458542-r3" x="24.4" y="654.4" textLength="36.6" clip-path="url(#terminal-1930458542-line-26)">&#160;0&#160;</text><text class="terminal-1930458542-r2" x="73.2" y="654.4" textLength="24.4" clip-path="url(#terminal-1930458542-line-26)">退出</text><text class="terminal-1930458542-r1" x="963.8" y="654.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-26)">│</text><text class="terminal-1930458542-r2" x="976" y="654.4" textLength="12.2" clip-path="url(#terminal-1930458542-line-26)">
+</text><text class="terminal-1930458542-r1" x="0" y="678.8" textLength="976" clip-path="url(#terminal-1930458542-line-27)">╰──────────────────────────────────────────────────────────────────────────────╯</text><text class="terminal-1930458542-r2" x="976" y="678.8" textLength="12.2" clip-path="url(#terminal-1930458542-line-27)">
+</text>
+    </g>
+    </g>
+</svg>

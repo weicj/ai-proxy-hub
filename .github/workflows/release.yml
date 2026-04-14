@@ -16,6 +16,13 @@ jobs:
           python-version: "3.12"
       - name: Run tests
         run: python -m unittest discover -s tests -v
+      - name: Release preflight
+        run: >
+          python scripts/release_preflight.py
+          --version "${GITHUB_REF_NAME#v}"
+          --allow-missing-public-links
+          --skip-tests
+          --skip-build
       - name: Build release artifacts
         run: >
           python scripts/build_release.py

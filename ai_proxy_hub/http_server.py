@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Iterable, Optional
 
 from .config_logic import normalize_shared_api_prefixes
-from .constants import DEFAULT_SHARED_API_PREFIXES, UPSTREAM_PROTOCOL_ORDER
+from .constants import APP_VERSION, DEFAULT_SHARED_API_PREFIXES, UPSTREAM_PROTOCOL_ORDER
 from .http_handler_base import RouterRequestHandlerBaseMixin
 from .http_handler_control import RouterRequestHandlerControlMixin
 from .http_handler_proxy import RouterRequestHandlerProxyMixin
@@ -57,7 +57,7 @@ class RouterRequestHandler(
     RouterRequestHandlerProxyMixin,
     BaseHTTPRequestHandler,
 ):
-    server_version = "AIProxyHub/0.3"
+    server_version = f"AIProxyHub/{APP_VERSION}"
     protocol_version = "HTTP/1.1"
 
     @property

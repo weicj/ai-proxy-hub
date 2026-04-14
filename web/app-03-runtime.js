@@ -252,6 +252,7 @@ function renderRuntime() {
   const gemini = clients.gemini || {};
   const local_llm = clients.local_llm || {};
   const routing = state.status.routing || {};
+  const app = state.status.app || {};
   const activeProtocols = normalizedServiceProtocols(service);
   const partiallyRunning = service.owner !== "external" && (service.state === "partial" || Boolean(service.partially_started));
   const runtimeSignature = signatureOf({
@@ -261,6 +262,7 @@ function renderRuntime() {
     service,
     clients,
     routing,
+    app,
   });
   if (runtimeSignature === state.runtimeRenderSignature) {
     return;
@@ -286,6 +288,7 @@ function renderRuntime() {
     services: serviceProtocolsLabel(activeProtocols),
   });
   renderRuntimeClientStatuses(runtime, { codex, claude, gemini, local_llm });
+  renderProjectMeta();
   setModeButtonState(document.getElementById("globalForwardingBtn"), globalMode === "forwarding");
   setModeButtonState(document.getElementById("globalProxyBtn"), globalMode === "proxy");
   setModeButtonState(document.getElementById("globalStopBtn"), globalMode === "stopped", {
