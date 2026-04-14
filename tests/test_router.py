@@ -334,6 +334,49 @@ class RouterServerTest(unittest.TestCase):
         self.assertEqual(snapshot["state"], "external")
         self.assertIn("openai", snapshot["active_protocols"])
 
+    def test_attach_external_instance_retries_brief_status_race(self):
+        config_path = Path(self.tempdir.name) / "attach-race-config.json"
+        config = normalize_config(
+            {
+                "listen_host": "127.0.0.1",
+                "listen_port": 8787,
+                "web_ui_port": 8787,
+                "endpoint_mode": "shared",
+                "upstreams": [{"name": "Upstream", "base_url": "https://example.com/v1", "api_key": "sk-demo"}],
+            }
+        )
+        write_json(config_path, config)
+        controller = ServiceController(config_path, PROJECT_ROOT / "web", ConfigStore(config_path))
+        payload = {
+            "runtime": {
+                "host": "127.0.0.1",
+                "port": 8787,
+                "web_ui_port": 8787,
+                "endpoint_mode": "shared",
+                "listen_targets": [{"name": "shared", "port": 8787, "exposed_protocols": ["openai", "anthropic", "gemini"]}],
+                "openai_base_url": "http://127.0.0.1:8787/openai",
+                "claude_base_url": "http://127.0.0.1:8787/claude",
+                "gemini_base_url": "http://127.0.0.1:8787/gemini",
+            },
+            "service": {
+                "state": "running",
+                "owner": "local",
+                "active_server_names": ["shared"],
+                "active_protocols": ["openai", "anthropic", "gemini"],
+                "dashboard_running": True,
+            },
+        }
+
+        with mock.patch(
+            "ai_proxy_hub.service_controller.fetch_hub_status",
+            side_effect=[None, payload],
+        ) as fetch_status:
+            result = controller.attach_external_instance("127.0.0.1", 8787)
+
+        self.assertTrue(result["ok"])
+        self.assertTrue(result["attached_to_external"])
+        self.assertEqual(fetch_status.call_count, 2)
+
     def test_failover_switches_to_second_upstream_after_429(self):
         status, payload = make_request(
             f"{self.proxy_base}/v1/chat/completions",

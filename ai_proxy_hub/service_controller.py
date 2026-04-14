@@ -171,8 +171,26 @@ class ServiceController:
             **copy.deepcopy(runtime),
         }
 
+    def _fetch_external_attachment_payload(
+        self,
+        host: str,
+        port: int,
+        *,
+        timeout_sec: float = 2.5,
+        interval_sec: float = 0.1,
+    ) -> Optional[Dict[str, Any]]:
+        deadline = time.monotonic() + timeout_sec
+        while True:
+            payload = fetch_hub_status(host, port)
+            if payload is not None:
+                return payload
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return None
+            time.sleep(min(interval_sec, remaining))
+
     def attach_external_instance(self, host: str, port: int) -> Dict[str, Any]:
-        payload = fetch_hub_status(host, port)
+        payload = self._fetch_external_attachment_payload(host, port)
         if payload is None:
             return {"ok": False, "message": "external_status_unavailable"}
         return self._set_external_attachment(payload, host, port)
