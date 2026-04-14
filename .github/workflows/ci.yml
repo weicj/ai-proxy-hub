@@ -42,8 +42,50 @@ jobs:
           --name test_router.ProbeParsingTest
       - name: Run router platform tests
         run: python scripts/run_named_unittest.py --tests-dir tests --name test_router.PlatformSupportTest
-      - name: Run router server tests
-        run: python scripts/run_named_unittest.py --tests-dir tests --name test_router.RouterServerTest
+      - name: Run router server tests 1
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
+          --name test_router.RouterServerTest.test_anthropic_proxy_routes_with_protocol_specific_headers
+          --name test_router.RouterServerTest.test_auto_routing_skips_upstream_that_does_not_advertise_requested_model
+          --name test_router.RouterServerTest.test_client_control_endpoint_switches_single_client
+          --name test_router.RouterServerTest.test_codex_binding_status_treats_legacy_local_endpoint_as_not_switched
+          --name test_router.RouterServerTest.test_config_export_and_import_endpoints
+          --name test_router.RouterServerTest.test_dashboard_serves_split_javascript_assets
+          --name test_router.RouterServerTest.test_failover_switches_to_second_upstream_after_429
+          --name test_router.RouterServerTest.test_gemini_proxy_routes_with_protocol_specific_headers
+      - name: Run router server tests 2
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
+          --name test_router.RouterServerTest.test_global_default_model_is_injected_when_request_model_is_missing
+          --name test_router.RouterServerTest.test_latency_mode_prefers_lower_latency_upstream
+          --name test_router.RouterServerTest.test_legacy_config_is_migrated_to_upstreams
+          --name test_router.RouterServerTest.test_local_api_key_can_be_limited_to_specific_protocols
+          --name test_router.RouterServerTest.test_local_api_key_is_required
+          --name test_router.RouterServerTest.test_manual_lock_uses_selected_upstream_without_failover
+          --name test_router.RouterServerTest.test_models_all_fail_returns_503_without_double_probing
+          --name test_router.RouterServerTest.test_models_endpoint_aggregates_multiple_upstreams
+      - name: Run router server tests 3
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
+          --name test_router.RouterServerTest.test_non_stream_proxy_response_has_single_content_length_header
+          --name test_router.RouterServerTest.test_openai_alias_path_routes_through_openai_prefix
+          --name test_router.RouterServerTest.test_payload_too_large_returns_proxy_diagnostic
+          --name test_router.RouterServerTest.test_protocol_specific_default_model_is_used_for_anthropic_requests
+          --name test_router.RouterServerTest.test_round_robin_rotates_between_upstreams
+          --name test_router.RouterServerTest.test_secondary_local_api_key_is_accepted_and_tracked
+          --name test_router.RouterServerTest.test_service_control_endpoint_starts_forwarding_mode
+          --name test_router.RouterServerTest.test_service_control_endpoint_starts_proxy_mode
+      - name: Run router server tests 4
+        run: >-
+          python scripts/run_named_unittest.py --tests-dir tests
+          --name test_router.RouterServerTest.test_service_controller_attaches_to_running_external_instance_on_port_conflict
+          --name test_router.RouterServerTest.test_status_exposes_runtime_client_endpoints
+          --name test_router.RouterServerTest.test_upstream_default_model_is_injected_when_request_model_is_missing
+          --name test_router.RouterServerTest.test_upstream_probe_returns_detected_model_ids
+          --name test_router.RouterServerTest.test_usage_and_stats_persist_after_store_restart
+          --name test_router.RouterServerTest.test_usage_ranges_use_expected_bucket_precision
+          --name test_router.RouterServerTest.test_usage_series_counts_requests_by_upstream
+          --name test_router.RouterServerTest.test_usage_series_tracks_secondary_local_key_dimension
       - name: Run router subscription tests
         run: python scripts/run_named_unittest.py --tests-dir tests --name test_router.SubscriptionRulesTest
       - name: Verify packaging metadata
