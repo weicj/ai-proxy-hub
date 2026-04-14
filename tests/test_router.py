@@ -2003,7 +2003,7 @@ class PlatformSupportTest(unittest.TestCase):
             home = Path(tempdir)
             default_dir = home / "Library" / "Application Support" / APP_NAME
             default_dir.mkdir(parents=True)
-            with mock.patch("router_server.os.getuid", return_value=999999):
+            with mock.patch("router_server.os.getuid", return_value=999999, create=True):
                 preferred = preferred_app_config_dir(home=home, env={}, family="macos")
             self.assertEqual(preferred, home / ".config" / APP_SLUG)
 
