@@ -262,38 +262,7 @@ class RouterServerTest(unittest.TestCase):
         return f"http://127.0.0.1:{server.server_address[1]}"
 
     def test_service_controller_attaches_to_running_external_instance_on_port_conflict(self):
-        port = reserve_tcp_port()
-        external_config_path = Path(self.tempdir.name) / "external-instance.json"
-        external_config = normalize_config(
-            {
-                "listen_host": "127.0.0.1",
-                "listen_port": port,
-                "web_ui_port": port,
-                "endpoint_mode": "shared",
-                "shared_api_prefixes": {
-                    "openai": "/external-openai",
-                    "anthropic": "/external-claude",
-                    "gemini": "/external-gemini",
-                    "local_llm": "/external-local",
-                },
-                "upstreams": [
-                    {
-                        "name": "External Upstream",
-                        "base_url": "https://example.com/v1",
-                        "api_key": "sk-demo",
-                    }
-                ],
-            }
-        )
-        write_json(external_config_path, external_config)
-        external_server = create_server(external_config_path, PROJECT_ROOT / "web", "127.0.0.1", port)
-        external_thread = threading.Thread(target=external_server.serve_forever, daemon=True)
-        external_thread.start()
-        wait_for_tcp_server("127.0.0.1", port)
-        self.addCleanup(external_server.shutdown)
-        self.addCleanup(external_server.server_close)
-        self.addCleanup(external_thread.join, 1)
-
+        port = 8787
         local_config_path = Path(self.tempdir.name) / "local-instance.json"
         local_config = normalize_config(
             {
@@ -318,21 +287,53 @@ class RouterServerTest(unittest.TestCase):
         )
         write_json(local_config_path, local_config)
         controller = ServiceController(local_config_path, PROJECT_ROOT / "web", ConfigStore(local_config_path))
+        external_payload = {
+            "runtime": {
+                "host": "127.0.0.1",
+                "port": port,
+                "web_ui_port": port,
+                "endpoint_mode": "shared",
+                "openai_base_url": f"http://127.0.0.1:{port}/external-openai",
+                "claude_base_url": f"http://127.0.0.1:{port}/external-claude",
+                "gemini_base_url": f"http://127.0.0.1:{port}/external-gemini",
+                "listen_targets": [
+                    {
+                        "name": "shared",
+                        "host": "127.0.0.1",
+                        "port": port,
+                        "exposed_protocols": ["openai", "anthropic", "gemini"],
+                    }
+                ],
+            },
+            "service": {
+                "state": "running",
+                "owner": "local",
+                "active_server_names": ["shared"],
+                "active_protocols": ["openai", "anthropic", "gemini"],
+                "dashboard_running": True,
+            },
+        }
 
         with mock.patch(
             "ai_proxy_hub.service_controller.switch_all_clients_to_local_hub",
             return_value={"codex": {"ok": True}, "claude": {"ok": True}, "gemini": {"ok": True}},
+        ), mock.patch.object(controller, "_is_ai_proxy_hub_running", return_value=False), mock.patch.object(
+            controller,
+            "_create_server_from_spec",
+            side_effect=OSError(98, "Address already in use"),
+        ), mock.patch(
+            "ai_proxy_hub.service_controller.fetch_hub_status",
+            return_value=external_payload,
         ):
             result = controller.start_proxy_mode()
-
-        self.assertTrue(result["ok"])
-        self.assertTrue(result.get("attached_to_external"))
-        runtime = controller.runtime_info()
-        self.assertEqual(runtime["port"], port)
-        self.assertTrue(str(runtime["openai_base_url"]).endswith("/external-openai"))
-        snapshot = controller.status_snapshot()
-        self.assertEqual(snapshot["state"], "external")
-        self.assertIn("openai", snapshot["active_protocols"])
+            self.assertTrue(result["ok"])
+            self.assertTrue(result.get("attached_to_external"))
+            runtime = controller.runtime_info()
+            self.assertEqual(runtime["port"], port)
+            self.assertTrue(str(runtime["openai_base_url"]).endswith("/external-openai"))
+            snapshot = controller.status_snapshot()
+            self.assertEqual(snapshot["state"], "external")
+            self.assertIn("openai", snapshot["active_protocols"])
 
     def test_attach_external_instance_retries_brief_status_race(self):
         config_path = Path(self.tempdir.name) / "attach-race-config.json"
