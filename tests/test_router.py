@@ -5,6 +5,7 @@ import socket
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from contextlib import ExitStack
 from datetime import datetime
@@ -121,6 +122,7 @@ def make_upstream_server(routes, call_log):
     server = ThreadingHTTPServer(("127.0.0.1", 0), UpstreamHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
+    wait_for_tcp_server("127.0.0.1", server.server_address[1])
     return server, thread
 
 
@@ -148,6 +150,17 @@ def reserve_tcp_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as handle:
         handle.bind(("127.0.0.1", 0))
         return handle.getsockname()[1]
+
+
+def wait_for_tcp_server(host: str, port: int, *, timeout: float = 5.0) -> None:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=0.5):
+                return
+        except OSError:
+            time.sleep(0.05)
+    raise TimeoutError(f"Timed out waiting for TCP server {host}:{port}")
 
 
 class RouterServerTest(unittest.TestCase):
@@ -210,12 +223,15 @@ class RouterServerTest(unittest.TestCase):
         self.proxy = create_server(config_path, PROJECT_ROOT / "web", "127.0.0.1", 0)
         self.proxy_thread = threading.Thread(target=self.proxy.serve_forever, daemon=True)
         self.proxy_thread.start()
+        wait_for_tcp_server("127.0.0.1", self.proxy.server_address[1])
         self.proxy_base = f"http://127.0.0.1:{self.proxy.server_address[1]}"
 
     def tearDown(self):
         for server in (self.proxy, self.upstream_one, self.upstream_two):
             server.shutdown()
             server.server_close()
+        for thread in (self.proxy_thread, self.upstream_one_thread, self.upstream_two_thread):
+            thread.join(timeout=2)
         self.tempdir.cleanup()
 
     def managed_dashboard_base(self, controller):
@@ -272,6 +288,7 @@ class RouterServerTest(unittest.TestCase):
         external_server = create_server(external_config_path, PROJECT_ROOT / "web", "127.0.0.1", port)
         external_thread = threading.Thread(target=external_server.serve_forever, daemon=True)
         external_thread.start()
+        wait_for_tcp_server("127.0.0.1", port)
         self.addCleanup(external_server.shutdown)
         self.addCleanup(external_server.server_close)
         self.addCleanup(external_thread.join, 1)
