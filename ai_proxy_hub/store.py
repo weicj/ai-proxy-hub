@@ -382,6 +382,7 @@ class ConfigStore:
         status: Optional[int],
         latency_ms: Optional[float] = None,
         models_count: Optional[int] = None,
+        models: Optional[List[str]] = None,
     ) -> None:
         with self.lock:
             upstream = self._find_upstream_locked(upstream_id)
@@ -393,6 +394,8 @@ class ConfigStore:
             stat["last_probe_error"] = ""
             stat["last_probe_latency_ms"] = round(float(latency_ms), 2) if latency_ms is not None else None
             stat["last_probe_models_count"] = models_count
+            if models is not None:
+                stat["last_probe_models"] = [str(model_id).strip() for model_id in models if str(model_id).strip()]
             stat["cooldown_until"] = 0.0
             record_subscription_success(upstream, stat, subscription_id)
             self._save_runtime_state_locked()
@@ -406,6 +409,7 @@ class ConfigStore:
         status: Optional[int] = None,
         latency_ms: Optional[float] = None,
         models_count: Optional[int] = None,
+        models: Optional[List[str]] = None,
     ) -> None:
         with self.lock:
             upstream = self._find_upstream_locked(upstream_id)
@@ -417,6 +421,8 @@ class ConfigStore:
             stat["last_probe_error"] = str(error or "")
             stat["last_probe_latency_ms"] = round(float(latency_ms), 2) if latency_ms is not None else None
             stat["last_probe_models_count"] = models_count
+            if models is not None:
+                stat["last_probe_models"] = [str(model_id).strip() for model_id in models if str(model_id).strip()]
             stat["cooldown_until"] = 0.0
             record_subscription_failure(upstream, stat, subscription_id, error=error, exhaustion_signal=True)
             self._save_runtime_state_locked()
@@ -564,6 +570,7 @@ class ConfigStore:
         error: str = "",
         latency_ms: Optional[float] = None,
         models_count: Optional[int] = None,
+        models: Optional[List[str]] = None,
     ) -> None:
         with self.lock:
             stat = self._ensure_upstream_stat_locked(upstream_id)
@@ -572,6 +579,8 @@ class ConfigStore:
             stat["last_probe_error"] = error
             stat["last_probe_latency_ms"] = round(float(latency_ms), 2) if latency_ms is not None else None
             stat["last_probe_models_count"] = models_count
+            if models is not None:
+                stat["last_probe_models"] = [str(model_id).strip() for model_id in models if str(model_id).strip()]
             self._save_runtime_state_locked()
 
     def record_local_key_result(self, local_key_id: str, *, success: bool, upstream_id: str = "", error: str = "") -> None:
@@ -637,9 +646,22 @@ class ConfigStore:
     def _apply_routing_mode_locked(self, upstreams: List[Dict[str, Any]], protocol: str, *, advance_cursor: bool) -> List[Dict[str, Any]]:
         return apply_routing_mode_locked(self, upstreams, protocol, advance_cursor=advance_cursor)
 
-    def get_request_plan(self, *, protocol: str = "openai", for_models: bool = False, advance_round_robin: bool = False) -> Dict[str, Any]:
+    def get_request_plan(
+        self,
+        *,
+        protocol: str = "openai",
+        for_models: bool = False,
+        advance_round_robin: bool = False,
+        requested_model: str = "",
+    ) -> Dict[str, Any]:
         with self.lock:
-            return build_request_plan(self, protocol=protocol, for_models=for_models, advance_round_robin=advance_round_robin)
+            return build_request_plan(
+                self,
+                protocol=protocol,
+                for_models=for_models,
+                advance_round_robin=advance_round_robin,
+                requested_model=requested_model,
+            )
 
     def _upstream_name_locked(self, upstream_id: str) -> str:
         return upstream_name_locked(self, upstream_id)

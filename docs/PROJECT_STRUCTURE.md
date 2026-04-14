@@ -4,6 +4,8 @@
 
 - `ai_proxy_hub/`
   后端主包，按职责拆成 `constants`、`utils`、`protocols`、`local_keys`、`path_utils`、`app_paths`、`file_io`、`config_logic`、`config`、`network`、`client_switch`、`store`、`http_server`、`service_controller`、`service_controller_helpers`、`cli_app`、`entrypoints` 等模块。
+- `start.py`
+  当前推荐的顶层脚本入口，适合直接在源码目录下运行。
 - `router_server.py`
   兼容入口层，保留旧导入路径，内部转发到 `ai_proxy_hub`。
 - `ai_proxy_hub/__main__.py`
@@ -18,7 +20,7 @@
 - `tests/`
   自动化测试，覆盖路由、故障切换、路径解析和配置行为。
 - `scripts/`
-  构建和发布脚本，例如 GitHub Release、Homebrew、winget、`.deb` 产物生成、发布产物校验、发布快照同步、远程 Linux 冒烟验证。
+  构建和发布脚本，例如 GitHub Release、Homebrew tap 同步、winget、`.deb` 产物生成、发布产物校验、发布快照同步、远程 Linux 冒烟验证。
 - `examples/`
   示例配置，只放脱敏样例，不放真实密钥，也可放外部测试环境变量模板。
 - `docs/`
@@ -35,7 +37,7 @@
 
 当前仓库整理后的目标是：
 
-- 根目录只保留入口兼容层和项目元数据。
+- 根目录只保留清晰入口层、兼容入口层和项目元数据。
 - 后端逻辑优先放进 `ai_proxy_hub/`，避免继续把功能堆回单文件。
 - 纯常量、纯工具函数、路径选择、本地 key、配置归一化和客户端切换逻辑优先落到小模块，减少 `legacy_impl.py` 的噪音。
 - `legacy_impl.py` 仅保留尚未完全迁移的兼容承载逻辑，新的实现优先落在独立模块。

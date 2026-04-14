@@ -24,7 +24,14 @@ The primary design target is local or private-network use. LAN exposure can be e
 
 ## Does it require root or administrator permissions?
 
-No. The intended operating model is user-level execution with user-writable configuration paths.
+Not for normal runtime. The intended operating model is user-level execution with user-writable configuration paths.
+
+Installation can still use elevated privileges when the platform expects them, such as:
+
+- `sudo apt install ./ai-proxy-hub_<version>_all.deb`
+- `sudo dpkg -i ai-proxy-hub_<version>_all.deb`
+
+So the rule is: installation may use `sudo`, but routine operation should not depend on it.
 
 ## Can one local API key be limited to only one protocol?
 

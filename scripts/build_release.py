@@ -16,6 +16,7 @@ from pathlib import Path
 APP_NAME = "AI Proxy Hub"
 APP_SLUG = "ai-proxy-hub"
 DEFAULT_FILES = [
+    "start.py",
     "router_server.py",
     "cli_modern.py",
     "README.md",
@@ -129,7 +130,7 @@ def build_deb(root: Path, version: str, output_dir: Path) -> Path | None:
             Section: utils
             Priority: optional
             Architecture: all
-            Maintainer: AI Proxy Hub contributors
+            Maintainer: weicj
             Depends: python3 (>= 3.9)
             Description: Cross-platform local AI proxy hub with CLI and Web dashboard
             """
@@ -196,7 +197,7 @@ def winget_manifest(version: str, homepage: str, download_url: str, sha256: str)
         PackageIdentifier: {package_id}
         PackageVersion: {version}
         PackageLocale: en-US
-        Publisher: AI Proxy Hub contributors
+        Publisher: weicj
         PublisherUrl: {homepage}
         PackageName: {APP_NAME}
         ShortDescription: Cross-platform local AI proxy hub with CLI and Web dashboard

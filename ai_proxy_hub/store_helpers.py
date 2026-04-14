@@ -36,6 +36,7 @@ def default_upstream_stat() -> Dict[str, Any]:
         "last_probe_error": "",
         "last_probe_latency_ms": None,
         "last_probe_models_count": None,
+        "last_probe_models": [],
         "subscription_states": {},
         "subscription_manual_enable_required": False,
         "subscription_manual_enable_reason": "",
@@ -91,6 +92,11 @@ def load_runtime_state(raw: Dict[str, Any]) -> Dict[str, Any]:
         "stats": {
             str(key): {
                 **value,
+                "last_probe_models": [
+                    str(model_id).strip()
+                    for model_id in (value.get("last_probe_models") or [])
+                    if str(model_id).strip()
+                ],
                 "subscription_states": {
                     str(subscription_id): {
                         **default_subscription_runtime_state(),

@@ -4,8 +4,6 @@ function renderStaticTexts() {
   document.documentElement.lang = currentLanguage() === "zh" ? "zh-CN" : "en";
   document.getElementById("appTitle").textContent = t("appTitle");
   document.getElementById("appSubtitle").textContent = t("appSubtitle");
-  setIconLabel("projectMetaTitle", "info", t("projectMetaTitle"), "icon icon-md");
-  document.getElementById("projectMetaHint").textContent = t("projectMetaHint");
   setIconLabel("workspaceTitle", "layout", t("workspaceTitle"), "icon icon-md");
   document.getElementById("workspaceHint").textContent = t("workspaceHint");
   document.getElementById("workspaceCollapsedHint").textContent = t("workspaceCollapsedHint");
@@ -85,26 +83,26 @@ function renderProjectMeta() {
   const license = meta.license || {};
   const source = meta.source || {};
   const updates = meta.updates || {};
+  const updatesLabel = updates.channel === "manual"
+    ? t("projectMetaUpdatesManual")
+    : updates.configured
+      ? String(updates.channel || "-")
+      : t("projectMetaUpdatesPending");
+  document.getElementById("projectMetaSummary").innerHTML = [
+    `<strong class="project-meta-name">${escapeHtml(meta.name || t("appTitle"))}</strong>`,
+    `<span class="project-meta-summary-sep">·</span>`,
+    `<span class="project-meta-version">v${escapeHtml(meta.version || "-")}</span>`,
+    `<span class="project-meta-summary-sep">·</span>`,
+    `<span>${escapeHtml(license.name || "-")}</span>`,
+  ].join("");
   const badges = [
-    [t("projectMetaVersion"), `v${meta.version || "-"}`],
-    [t("projectMetaConfigVersion"), `v${meta.config_version || "-"}`],
-    [t("projectMetaLicense"), license.name || "-"],
-    [t("projectMetaAuthor"), meta.author || "-"],
-    [t("projectMetaSource"), source.configured ? (source.host || "GitHub") : t("projectMetaSourcePending")],
-    [
-      t("projectMetaUpdates"),
-      updates.channel === "manual"
-        ? t("projectMetaUpdatesManual")
-        : updates.configured
-          ? String(updates.channel || "-")
-          : t("projectMetaUpdatesPending"),
-    ],
+    `${t("projectMetaConfigVersion")} v${meta.config_version || "-"}`,
+    `${t("projectMetaAuthor")} ${meta.author || "-"}`,
+    source.configured ? (source.host || "GitHub") : t("projectMetaSourcePending"),
+    updatesLabel,
   ];
-  document.getElementById("projectMetaBadges").innerHTML = badges.map(([label, value]) => `
-    <div class="project-meta-chip">
-      <span class="project-meta-chip-label">${escapeHtml(label)}</span>
-      <strong class="project-meta-chip-value">${escapeHtml(value)}</strong>
-    </div>
+  document.getElementById("projectMetaBadges").innerHTML = badges.map((value) => `
+    <span class="project-meta-chip">${escapeHtml(value)}</span>
   `).join("");
 
   const links = [];

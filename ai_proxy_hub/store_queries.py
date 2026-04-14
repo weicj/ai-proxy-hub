@@ -54,7 +54,40 @@ def apply_routing_mode_locked(store: Any, upstreams: List[Dict[str, Any]], proto
     return [item for _, item in indexed]
 
 
-def get_request_plan(store: Any, *, protocol: str = "openai", for_models: bool = False, advance_round_robin: bool = False) -> Dict[str, Any]:
+def filter_upstreams_for_model_locked(store: Any, upstreams: List[Dict[str, Any]], requested_model: str) -> List[Dict[str, Any]]:
+    model_id = str(requested_model or "").strip()
+    if not model_id:
+        return upstreams
+
+    supported: List[Dict[str, Any]] = []
+    unknown: List[Dict[str, Any]] = []
+    for upstream in upstreams:
+        stat = store.stats.get(upstream["id"], store._default_stat())
+        probe_models = [
+            str(candidate).strip()
+            for candidate in (stat.get("last_probe_models") or [])
+            if str(candidate).strip()
+        ]
+        if not probe_models:
+            unknown.append(upstream)
+            continue
+        if model_id in probe_models:
+            supported.append(upstream)
+    if supported:
+        return supported + unknown
+    if unknown:
+        return unknown
+    return upstreams
+
+
+def get_request_plan(
+    store: Any,
+    *,
+    protocol: str = "openai",
+    for_models: bool = False,
+    advance_round_robin: bool = False,
+    requested_model: str = "",
+) -> Dict[str, Any]:
     upstreams = store._get_configured_upstreams_locked(protocol)
     routing = store._get_protocol_routing_locked(protocol)
     auto_enabled = bool(routing.get("auto_routing_enabled", True))
@@ -91,7 +124,8 @@ def get_request_plan(store: Any, *, protocol: str = "openai", for_models: bool =
             "can_failover": False,
         }
 
-    ready, cooling = store._partition_upstreams_locked(upstreams)
+    candidate_upstreams = filter_upstreams_for_model_locked(store, upstreams, requested_model)
+    ready, cooling = store._partition_upstreams_locked(candidate_upstreams)
     ordered_ready = store._apply_routing_mode_locked(ready, protocol, advance_cursor=advance_round_robin)
     ordered_cooling = (
         store._apply_routing_mode_locked(cooling, protocol, advance_cursor=False)

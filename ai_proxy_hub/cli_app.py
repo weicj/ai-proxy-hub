@@ -667,7 +667,13 @@ class InteractiveConsoleApp:
         upstream = config["upstreams"][index]
         try:
             result = perform_upstream_probe_request(upstream, self.store.get_timeout())
-            self.store.record_probe_result(upstream["id"], status=result["status"], latency_ms=result["latency_ms"], models_count=result["models_count"])
+            self.store.record_probe_result(
+                upstream["id"],
+                status=result["status"],
+                latency_ms=result["latency_ms"],
+                models_count=result["models_count"],
+                models=result.get("models"),
+            )
             self.print_info(self.tr("test_ok", status=result["status"], latency=result["latency_ms"], models=result.get("models_count")))
         except Exception as exc:
             self.store.record_probe_result(upstream["id"], status=None, error=str(exc))

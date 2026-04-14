@@ -252,6 +252,52 @@ The repository keeps the backend, Web frontend, CLI runtime, release tooling, an
 
 ## Quick Start
 
+### Installation
+
+### Available now
+
+#### Source checkout
+
+```bash
+git clone https://github.com/weicj/ai-proxy-hub.git
+cd ai-proxy-hub
+pip install rich
+python3 start.py
+```
+
+#### Portable release archive
+
+Use the GitHub Release `.tar.gz` or `.zip` artifact, extract it locally, then run:
+
+```bash
+pip install rich
+python3 start.py
+```
+
+#### Debian / Ubuntu local package
+
+When a `.deb` artifact is provided in a release, install it with:
+
+```bash
+sudo apt install ./ai-proxy-hub_<version>_all.deb
+```
+
+or:
+
+```bash
+sudo dpkg -i ai-proxy-hub_<version>_all.deb
+```
+
+### Planned package-manager commands
+
+These publication flows are being prepared, but should not be documented as live until the public repositories are actually available:
+
+```bash
+brew install weicj/tap/ai-proxy-hub
+winget install AIProxyHub.AIProxyHub
+sudo apt install ai-proxy-hub
+```
+
 ### Prerequisites
 
 - Python `3.9+`
@@ -266,6 +312,12 @@ pip install rich
 ### Start the interactive console
 
 ```bash
+python3 start.py
+```
+
+### Start the interactive console via module entrypoint
+
+```bash
 python3 -m ai_proxy_hub
 ```
 
@@ -276,6 +328,12 @@ ai-proxy-hub
 ```
 
 ### Start the HTTP service directly
+
+```bash
+python3 start.py --serve
+```
+
+### Start the HTTP service via module entrypoint
 
 ```bash
 python3 -m ai_proxy_hub --serve
@@ -293,7 +351,7 @@ python3 -m ai_proxy_hub --print-paths
 python3 -m ai_proxy_hub --serve --host 127.0.0.1 --port 8799
 ```
 
-The package command `ai-proxy-hub` provides the same entrypoint after installation. The legacy `router_server.py` file is kept for backward compatibility, but it is no longer the primary documented entry.
+For a source checkout, `start.py` is now the clearest launcher. The package command `ai-proxy-hub` provides the same entrypoint after installation. The legacy `router_server.py` file is kept only for backward compatibility.
 
 ## Configuration Model
 
@@ -437,25 +495,35 @@ python3 -m unittest discover -s tests -v
 ### Build release artifacts
 
 ```bash
-python3 scripts/build_release.py --version 0.3.0
+python3 scripts/build_release.py --version 0.3.1
 ```
 
 ### Verify release artifacts
 
 ```bash
-python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.0
+python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.1
 ```
 
 ### Run release preflight
 
 ```bash
-python3 scripts/release_preflight.py --version 0.3.0
+python3 scripts/release_preflight.py --version 0.3.1
 ```
 
 ### Sync the current source tree into the local release workspace
 
 ```bash
-python3 scripts/sync_release_snapshot.py --version 0.3.0
+python3 scripts/sync_release_snapshot.py --version 0.3.1
+```
+
+### Sync the generated Homebrew formula into a tap checkout
+
+```bash
+python3 scripts/sync_homebrew_tap.py \
+  --formula dist/release-metadata/ai-proxy-hub.rb \
+  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-tap \
+  --tap-repo weicj/homebrew-tap \
+  --version 0.3.1
 ```
 
 ### Run a remote Linux smoke test
@@ -464,7 +532,7 @@ python3 scripts/sync_release_snapshot.py --version 0.3.0
 python3 scripts/run_remote_linux_smoke.py \
   --ssh user@linux-host \
   --identity-file ~/.ssh/id_ed25519 \
-  --artifact dist/ai-proxy-hub-0.3.0.tar.gz
+  --artifact dist/ai-proxy-hub-0.3.1.tar.gz
 ```
 
 ### Current artifact targets
@@ -492,7 +560,14 @@ No. The project is intended to run on macOS, Linux, and Windows. Release tooling
 
 ### Does it require root or administrator privileges?
 
-No. The normal target is user-level execution with user-writable config directories. Administrator privileges should not be the default operating model.
+Runtime should not require root or administrator privileges. The normal target is user-level execution with user-writable config directories.
+
+For installation, elevated privileges are acceptable when the platform expects them, for example:
+
+- `sudo apt install ./ai-proxy-hub_<version>_all.deb`
+- `sudo dpkg -i ai-proxy-hub_<version>_all.deb`
+
+That distinction matters: installation may use `sudo`, but day-to-day running should still work as a normal user.
 
 ### Is it meant to be a public Internet gateway?
 
@@ -509,7 +584,7 @@ See [docs/FAQ.md](docs/FAQ.md).
 ## Roadmap
 
 - PyPI publication
-- Homebrew tap publication flow
+- publish `weicj/homebrew-tap` and enable `brew install weicj/tap/ai-proxy-hub`
 - APT-oriented release flow
 - winget submission workflow
 - broader language packs on top of the current i18n structure

@@ -33,6 +33,13 @@ assert SYNC_RELEASE_SPEC and SYNC_RELEASE_SPEC.loader
 sync_release_snapshot_module = importlib.util.module_from_spec(SYNC_RELEASE_SPEC)
 SYNC_RELEASE_SPEC.loader.exec_module(sync_release_snapshot_module)
 
+SYNC_HOMEBREW_TAP_SPEC = importlib.util.spec_from_file_location(
+    "sync_homebrew_tap_module", PROJECT_ROOT / "scripts" / "sync_homebrew_tap.py"
+)
+assert SYNC_HOMEBREW_TAP_SPEC and SYNC_HOMEBREW_TAP_SPEC.loader
+sync_homebrew_tap_module = importlib.util.module_from_spec(SYNC_HOMEBREW_TAP_SPEC)
+SYNC_HOMEBREW_TAP_SPEC.loader.exec_module(sync_homebrew_tap_module)
+
 import router_server as router_server_module  # noqa: E402
 from router_server import (  # noqa: E402
     APP_NAME,
@@ -346,6 +353,38 @@ class RouterServerTest(unittest.TestCase):
         self.assertEqual(body["error"]["code"], "insufficient_quota")
         self.assertEqual(len(self.upstream_one_log), 1)
         self.assertEqual(len(self.upstream_two_log), 0)
+
+    def test_payload_too_large_returns_proxy_diagnostic(self):
+        self.upstream_one_routes[("POST", "/v1/responses")] = {
+            "status": 413,
+            "body": {"error": {"message": "payload too large", "code": "payload_too_large"}},
+        }
+        config = self.proxy.store.get_config()
+        config["auto_routing_enabled"] = False
+        config["manual_active_upstream_id"] = config["upstreams"][0]["id"]
+        self.proxy.store.save_config(config)
+
+        payload = {"model": "gpt-5.4", "input": "hello"}
+        raw_body = encode_request_body(payload)
+        request = urllib.request.Request(
+            f"{self.proxy_base}/v1/responses",
+            method="POST",
+            data=raw_body,
+            headers={
+                "Authorization": "Bearer sk-local-test",
+                "Content-Type": "application/json",
+            },
+        )
+        with self.assertRaises(urllib.error.HTTPError) as context:
+            urllib.request.urlopen(request, timeout=5)
+        body = json.loads(context.exception.read().decode("utf-8"))
+        self.assertEqual(context.exception.code, 413)
+        self.assertEqual(body["error"]["code"], "upstream_payload_too_large")
+        self.assertIn("request_bytes=", body["error"]["message"])
+        self.assertIn(str(len(raw_body)), body["error"]["message"])
+        self.assertEqual(body["error"]["details"][0]["path"], "/v1/responses")
+        self.assertEqual(body["error"]["details"][0]["request_bytes"], len(raw_body))
+        self.assertEqual(len(self.upstream_one_log), 1)
 
     def test_models_endpoint_aggregates_multiple_upstreams(self):
         status, payload = make_request(f"{self.proxy_base}/v1/models", token="sk-local-test")
@@ -913,6 +952,50 @@ class RouterServerTest(unittest.TestCase):
 
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(self.upstream_one_log[0]["body"])["model"], "claude-opus-4-1")
+
+    def test_auto_routing_skips_upstream_that_does_not_advertise_requested_model(self):
+        self.upstream_one_routes[("POST", "/v1/chat/completions")] = {
+            "status": 200,
+            "body": {
+                "id": "chatcmpl-one",
+                "object": "chat.completion",
+                "choices": [{"index": 0, "message": {"role": "assistant", "content": "来自第一个上游"}}],
+            },
+        }
+        self.upstream_two_routes[("POST", "/v1/chat/completions")] = {
+            "status": 503,
+            "body": {
+                "error": {
+                    "message": "No available channel for model gpt-5.4",
+                    "type": "new_api_error",
+                    "code": "model_not_found",
+                }
+            },
+        }
+        self.proxy.store.record_probe_result(
+            self.proxy.store.get_config()["upstreams"][0]["id"],
+            status=200,
+            models_count=1,
+            models=["gpt-5.4"],
+        )
+        self.proxy.store.record_probe_result(
+            self.proxy.store.get_config()["upstreams"][1]["id"],
+            status=200,
+            models_count=1,
+            models=["claude-sonnet-4-6"],
+        )
+
+        status, payload = make_request(
+            f"{self.proxy_base}/v1/chat/completions",
+            method="POST",
+            token="sk-local-test",
+            data={"model": "gpt-5.4", "messages": [{"role": "user", "content": "hello"}]},
+        )
+
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["choices"][0]["message"]["content"], "来自第一个上游")
+        self.assertEqual(len(self.upstream_one_log), 1)
+        self.assertEqual(len(self.upstream_two_log), 0)
 
     def test_latency_mode_prefers_lower_latency_upstream(self):
         self.upstream_one_routes[("POST", "/v1/chat/completions")] = {
@@ -1753,6 +1836,7 @@ class PlatformSupportTest(unittest.TestCase):
         payload = json.loads(buffer.getvalue())
         self.assertEqual(payload["project"]["version"], payload["version"])
         self.assertEqual(payload["project"]["license"]["name"], "Apache-2.0")
+        self.assertEqual(payload["project"]["author"], "weicj")
         self.assertTrue(payload["project"]["source"]["configured"])
         self.assertEqual(payload["project"]["source"]["url"], "https://github.com/weicj/ai-proxy-hub")
         self.assertEqual(payload["project"]["updates"]["url"], "https://github.com/weicj/ai-proxy-hub/releases")
@@ -1766,6 +1850,7 @@ class PlatformSupportTest(unittest.TestCase):
         app = self.make_console_app(ui_language="en")
         status = app.store.get_status("127.0.0.1", 8787, service_state="stopped")
         self.assertEqual(status["app"]["name"], APP_NAME)
+        self.assertEqual(status["app"]["author"], "weicj")
         self.assertEqual(status["app"]["license"]["name"], "Apache-2.0")
         self.assertTrue(status["app"]["source"]["configured"])
         self.assertEqual(status["app"]["source"]["url"], "https://github.com/weicj/ai-proxy-hub")
@@ -1821,6 +1906,7 @@ class PlatformSupportTest(unittest.TestCase):
 
     def test_pyproject_declares_apache_license_metadata(self):
         pyproject_text = (PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        self.assertIn('requires = ["setuptools>=68", "wheel>=0.42"]', pyproject_text)
         self.assertIn('license = {file = "LICENSE"}', pyproject_text)
         self.assertIn('"License :: OSI Approved :: Apache Software License"', pyproject_text)
         self.assertIn('license-files = ["LICENSE", "NOTICE"]', pyproject_text)
@@ -1829,6 +1915,7 @@ class PlatformSupportTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tempdir:
             staging_root = build_release_module.stage_release_tree(PROJECT_ROOT, "0.0.0-test", Path(tempdir))
             self.assertTrue((staging_root / "LICENSE").exists())
+            self.assertTrue((staging_root / "start.py").exists())
             self.assertTrue((staging_root / "router_server.py").exists())
             self.assertTrue((staging_root / "ai_proxy_hub" / "__main__.py").exists())
             self.assertTrue((staging_root / "cli_modern.py").exists())
@@ -1846,6 +1933,7 @@ class PlatformSupportTest(unittest.TestCase):
                 ".gitignore": "*.pyc\n",
                 "README.md": "# demo\n",
                 "pyproject.toml": "[project]\nname='demo'\n",
+                "start.py": "print('start')\n",
                 "router_server.py": "print('ok')\n",
                 "cli_modern.py": "print('cli')\n",
                 ".github/workflows/ci.yml": "name: ci\n",
@@ -1867,6 +1955,7 @@ class PlatformSupportTest(unittest.TestCase):
 
             self.assertTrue((snapshot_dir / ".github" / "workflows" / "ci.yml").exists())
             self.assertTrue((snapshot_dir / "ai_proxy_hub" / "__init__.py").exists())
+            self.assertTrue((snapshot_dir / "start.py").exists())
             self.assertTrue((snapshot_dir / "scripts" / "build_release.py").exists())
             self.assertTrue((snapshot_dir / "tests" / "test_demo.py").exists())
             self.assertTrue((snapshot_dir / "web" / "index.html").exists())
@@ -1874,6 +1963,27 @@ class PlatformSupportTest(unittest.TestCase):
             self.assertFalse((snapshot_dir / "config_8830.json").exists())
             self.assertFalse((snapshot_dir / "tmp").exists())
             self.assertFalse((snapshot_dir / "dist").exists())
+
+    def test_sync_homebrew_tap_writes_formula_and_readme(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            formula_path = temp_path / "ai-proxy-hub.rb"
+            formula_path.write_text("class AiProxyHub < Formula\nend\n", encoding="utf-8")
+
+            target_formula = sync_homebrew_tap_module.sync_homebrew_tap(
+                formula_path,
+                temp_path / "homebrew-tap",
+                "weicj/homebrew-tap",
+                version="0.3.1",
+            )
+
+            self.assertEqual(target_formula.name, "ai-proxy-hub.rb")
+            self.assertTrue(target_formula.exists())
+            self.assertIn("class AiProxyHub < Formula", target_formula.read_text(encoding="utf-8"))
+            tap_readme = (temp_path / "homebrew-tap" / "README.md").read_text(encoding="utf-8")
+            self.assertIn("brew tap weicj/homebrew-tap", tap_readme)
+            self.assertIn("brew install weicj/tap/ai-proxy-hub", tap_readme)
+            self.assertTrue((temp_path / "homebrew-tap" / ".gitignore").exists())
 
     def test_index_html_references_extracted_stylesheet(self):
         index_text = (PROJECT_ROOT / "web" / "index.html").read_text(encoding="utf-8")

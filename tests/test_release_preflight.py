@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import subprocess
 import tempfile
 import unittest
@@ -80,6 +81,33 @@ class ReleasePreflightTest(unittest.TestCase):
         with mock.patch.object(release_preflight_module.subprocess, "run", return_value=completed):
             leaks = release_preflight_module.find_tracked_runtime_leaks(PROJECT_ROOT)
         self.assertEqual(leaks, ["config_8830.json", "tmp/runtime-8820.log", "build/output.txt"])
+
+    def test_main_uses_temporary_output_dir_when_default_output_is_not_writable(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            write_tree(root)
+            args = mock.Mock(
+                root=str(root),
+                version="0.3.0",
+                allow_missing_public_links=False,
+                skip_tests=True,
+                skip_build=False,
+            )
+            commands: list[list[str]] = []
+            with mock.patch.object(release_preflight_module, "parse_args", return_value=args):
+                with mock.patch.object(release_preflight_module, "gather_failures", return_value=[]):
+                    with mock.patch.object(release_preflight_module, "directory_supports_writes", return_value=False):
+                        with mock.patch.object(release_preflight_module, "run_checked", side_effect=lambda cmd, _root: commands.append(cmd)):
+                            with mock.patch("sys.stderr", new_callable=io.StringIO) as stderr:
+                                release_preflight_module.main()
+            self.assertEqual(len(commands), 2)
+            build_cmd, verify_cmd = commands
+            output_dir = build_cmd[build_cmd.index("--output-dir") + 1]
+            dist_dir = verify_cmd[verify_cmd.index("--dist-dir") + 1]
+            self.assertEqual(output_dir, dist_dir)
+            self.assertTrue(Path(output_dir).is_absolute())
+            self.assertNotEqual(Path(output_dir).name, "dist-preflight")
+            self.assertIn("temporary preflight output dir", stderr.getvalue())
 
 
 if __name__ == "__main__":

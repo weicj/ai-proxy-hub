@@ -82,6 +82,7 @@ class RouterRequestHandlerControlMixin:
                 status=result["status"],
                 latency_ms=result.get("latency_ms"),
                 models_count=result.get("models_count"),
+                models=result.get("models"),
             )
             self.send_json(200, {"ok": True, "result": result})
         except Exception as exc:  # pragma: no cover

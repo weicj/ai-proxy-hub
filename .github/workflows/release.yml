@@ -20,7 +20,6 @@ jobs:
         run: >
           python scripts/release_preflight.py
           --version "${GITHUB_REF_NAME#v}"
-          --allow-missing-public-links
           --skip-tests
           --skip-build
       - name: Build release artifacts

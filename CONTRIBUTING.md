@@ -139,6 +139,7 @@ feat: add HTTP connection pool for better performance
 ```
 ai-proxy-hub/
 ├── ai_proxy_hub/          # 后端主包（constants/utils/protocols/local_keys/path_utils/app_paths/file_io/config_logic/store/http_server/service_controller/cli_app 等）
+├── start.py               # 推荐脚本入口
 ├── ai_proxy_hub/__main__.py # 推荐模块入口（python -m ai_proxy_hub）
 ├── router_server.py       # 兼容入口
 ├── cli_modern.py          # CLI 界面

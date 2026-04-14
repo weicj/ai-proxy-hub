@@ -1229,35 +1229,59 @@ pre {
   position: relative;
 }
 
-.project-meta-panel {
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
   margin-top: 20px;
+  padding: 14px 4px 0;
+  border-top: 1px solid var(--line);
 }
 
-.project-meta-badges {
+.app-footer-main {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
+  gap: 8px;
+  min-width: 0;
 }
 
-.project-meta-chip {
-  display: grid;
-  gap: 6px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+.project-meta-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+  color: var(--text);
+  font-size: 13px;
 }
 
-.project-meta-chip-label {
-  font-size: 12px;
+.project-meta-name,
+.project-meta-version {
+  color: var(--text);
+}
+
+.project-meta-summary-sep {
   color: var(--muted);
 }
 
-.project-meta-chip-value {
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--text);
+.project-meta-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.project-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel-2) 72%, transparent);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .project-meta-links {
@@ -1272,15 +1296,16 @@ pre {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 42px;
-  padding: 11px 18px;
-  border-radius: 12px;
+  min-height: 34px;
+  padding: 8px 12px;
+  border-radius: 10px;
   text-decoration: none;
   white-space: nowrap;
+  font-size: 12px;
 }
 
 .project-meta-link.muted {
-  min-height: 38px;
+  min-height: 30px;
   padding: 0 4px;
   color: var(--muted);
   font-size: 12px;

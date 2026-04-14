@@ -25,6 +25,25 @@ from .utils import safe_int
 
 
 class RouterRequestHandlerProxyMixin:
+    def requested_model_for_request(
+        self,
+        protocol: str,
+        request_path: str,
+        request_payload: Optional[Dict[str, Any]],
+    ) -> str:
+        if not isinstance(request_payload, dict):
+            return ""
+        requested_model = str(request_payload.get("model") or "").strip()
+        if requested_model:
+            return requested_model
+        model_aware_paths = ANTHROPIC_MODEL_AWARE_PATHS if protocol == "anthropic" else MODEL_AWARE_PATHS
+        if request_path not in model_aware_paths:
+            return ""
+        model_settings = self.store.get_default_model_settings(protocol)
+        if model_settings["mode"] == "global":
+            return str(model_settings["global_default_model"] or "").strip()
+        return ""
+
     def recover_periodic_upstreams(self, protocol: str) -> None:
         candidates = self.store.get_periodic_probe_candidates(protocol=protocol)
         if not candidates:
@@ -44,6 +63,7 @@ class RouterRequestHandlerProxyMixin:
                     status=result.get("status"),
                     latency_ms=result.get("latency_ms"),
                     models_count=result.get("models_count"),
+                    models=result.get("models"),
                 )
             except Exception as exc:  # pragma: no cover
                 self.store.record_periodic_probe_failure(
@@ -77,6 +97,7 @@ class RouterRequestHandlerProxyMixin:
         parsed_request = urlsplit(self.path)
         local_request_path = self.strip_local_protocol_prefix(parsed_request.path, protocol)
         request_payload = decode_request_payload(request_body, self.headers.get("Content-Type", ""))
+        requested_model = self.requested_model_for_request(protocol, local_request_path, request_payload)
         self.recover_periodic_upstreams(protocol)
 
         if self.command == "GET" and local_request_path == upstream_probe_path(protocol):
@@ -97,7 +118,12 @@ class RouterRequestHandlerProxyMixin:
                 )
                 return
 
-        routing_plan = self.store.get_request_plan(protocol=protocol, for_models=False, advance_round_robin=True)
+        routing_plan = self.store.get_request_plan(
+            protocol=protocol,
+            for_models=False,
+            advance_round_robin=True,
+            requested_model=requested_model,
+        )
         upstreams = routing_plan["upstreams"]
         if not upstreams:
             record_local_key_once(False, error="no_upstreams")
@@ -126,12 +152,13 @@ class RouterRequestHandlerProxyMixin:
 
                 if response.status >= 400:
                     error_body = response.read()
+                    error_text = error_body.decode("utf-8", errors="ignore")[:300]
                     retryable = is_retryable_response(response.status, error_body, retryable_statuses)
                     if retryable and can_failover and index < len(upstreams) - 1:
                         self.store.record_failure(
                             upstream["id"],
                             status=response.status,
-                            error=error_body.decode("utf-8", errors="ignore")[:300],
+                            error=error_text,
                             cooldown=True,
                             local_key_id=local_key_id,
                         )
@@ -139,20 +166,61 @@ class RouterRequestHandlerProxyMixin:
                             {
                                 "upstream": upstream["name"],
                                 "status": response.status,
-                                "message": error_body.decode("utf-8", errors="ignore")[:300],
+                                "message": error_text,
                             }
                         )
                         connection.close()
                         continue
+                    if response.status == 413:
+                        diagnostic_error = (
+                            f"upstream={upstream['name']} path={local_request_path} "
+                            f"request_bytes={len(outgoing_body)} model={requested_model or '-'} "
+                            f"message={error_text}"
+                        )
+                        record_local_key_once(
+                            False,
+                            upstream_id=upstream["id"],
+                            error=diagnostic_error,
+                        )
+                        self.store.record_failure(
+                            upstream["id"],
+                            status=response.status,
+                            error=diagnostic_error,
+                            cooldown=False,
+                            local_key_id=local_key_id,
+                        )
+                        self.send_json(
+                            413,
+                            build_error_payload(
+                                (
+                                    f"上游 {upstream['name']} 拒绝了过大的请求体。"
+                                    f" path={local_request_path}, request_bytes={len(outgoing_body)}, "
+                                    f"model={requested_model or '-'}。请缩短会话上下文或新开会话。"
+                                ),
+                                code="upstream_payload_too_large",
+                                details=[
+                                    {
+                                        "upstream": upstream["name"],
+                                        "status": response.status,
+                                        "path": local_request_path,
+                                        "request_bytes": len(outgoing_body),
+                                        "model": requested_model or "",
+                                        "message": error_text,
+                                    }
+                                ],
+                            ),
+                        )
+                        connection.close()
+                        return
                     record_local_key_once(
                         False,
                         upstream_id=upstream["id"],
-                        error=error_body.decode("utf-8", errors="ignore")[:300],
+                        error=error_text,
                     )
                     self.store.record_failure(
                         upstream["id"],
                         status=response.status,
-                        error=error_body.decode("utf-8", errors="ignore")[:300],
+                        error=error_text,
                         cooldown=retryable and bool(routing_plan["auto_routing_enabled"]),
                         local_key_id=local_key_id,
                     )

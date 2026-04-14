@@ -14,7 +14,7 @@ Example:
 python3 scripts/run_remote_linux_smoke.py \
   --ssh user@linux-host \
   --identity-file ~/.ssh/id_ed25519 \
-  --artifact dist/ai-proxy-hub-0.3.0.tar.gz
+  --artifact dist/ai-proxy-hub-0.3.1.tar.gz
 ```
 
 What it verifies:

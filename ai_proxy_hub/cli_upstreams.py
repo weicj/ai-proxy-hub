@@ -170,6 +170,7 @@ class CliUpstreamController:
                 status=result["status"],
                 latency_ms=result["latency_ms"],
                 models_count=result["models_count"],
+                models=result.get("models"),
             )
             self.app.print_info(
                 self.app.tr(
@@ -333,6 +334,7 @@ class CliUpstreamController:
                     status=result["status"],
                     latency_ms=result["latency_ms"],
                     models_count=result["models_count"],
+                    models=result.get("models"),
                 )
             except Exception as exc:
                 self.app.store.record_probe_result(upstream["id"], status=None, error=str(exc))

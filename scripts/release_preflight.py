@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
+APP_SLUG = "ai-proxy-hub"
 REQUIRED_FILES = [
     "README.md",
     "README.zh-CN.md",
@@ -16,6 +19,7 @@ REQUIRED_FILES = [
     "LICENSE",
     "NOTICE",
     "pyproject.toml",
+    "start.py",
     "router_server.py",
     "cli_modern.py",
 ]
@@ -116,6 +120,38 @@ def run_checked(cmd: list[str], root: Path) -> None:
     subprocess.run(cmd, cwd=root, check=True)
 
 
+def directory_supports_writes(path: Path) -> bool:
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return False
+    probe_path = path / f".{APP_SLUG}-preflight-write-test-{os.getpid()}"
+    try:
+        with probe_path.open("w", encoding="utf-8") as handle:
+            handle.write("ok")
+        return True
+    except OSError:
+        return False
+    finally:
+        try:
+            probe_path.unlink()
+        except OSError:
+            pass
+
+
+def resolve_preflight_output_dir(root: Path, requested: str = "dist-preflight") -> tuple[Path, tempfile.TemporaryDirectory | None]:
+    preferred = (root / requested).resolve()
+    if directory_supports_writes(preferred):
+        return preferred, None
+    temporary_dir = tempfile.TemporaryDirectory(prefix=f"{APP_SLUG}-preflight-")
+    fallback = Path(temporary_dir.name).resolve()
+    print(
+        f"INFO {preferred} is not writable; using temporary preflight output dir {fallback}",
+        file=sys.stderr,
+    )
+    return fallback, temporary_dir
+
+
 def gather_failures(root: Path, args: argparse.Namespace) -> list[str]:
     failures: list[str] = []
     for relative in REQUIRED_FILES:
@@ -163,8 +199,14 @@ def main() -> None:
         run_checked([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"], root)
     if not args.skip_build:
         version = args.version or pyproject_version(root)
-        run_checked([sys.executable, "scripts/build_release.py", "--version", version, "--output-dir", "dist-preflight"], root)
-        run_checked([sys.executable, "scripts/verify_release_artifacts.py", "--dist-dir", "dist-preflight", "--version", version], root)
+        output_dir, temporary_dir = resolve_preflight_output_dir(root)
+        try:
+            output_dir_arg = str(output_dir)
+            run_checked([sys.executable, "scripts/build_release.py", "--version", version, "--output-dir", output_dir_arg], root)
+            run_checked([sys.executable, "scripts/verify_release_artifacts.py", "--dist-dir", output_dir_arg, "--version", version], root)
+        finally:
+            if temporary_dir is not None:
+                temporary_dir.cleanup()
     print("PASS release preflight")
 
 

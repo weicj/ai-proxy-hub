@@ -5,8 +5,8 @@ import errno
 
 APP_NAME = "AI Proxy Hub"
 APP_SLUG = "ai-proxy-hub"
-APP_VERSION = "0.3.0"
-APP_AUTHOR = "AI Proxy Hub contributors"
+APP_VERSION = "0.3.1"
+APP_AUTHOR = "weicj"
 APP_LICENSE_NAME = "Apache-2.0"
 APP_LICENSE_URL = "https://www.apache.org/licenses/LICENSE-2.0"
 APP_SOURCE_HOST = "GitHub"

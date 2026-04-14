@@ -252,6 +252,52 @@ AI Proxy Hub 本地入口
 
 ## 快速开始
 
+### 安装方式
+
+### 现在就可以使用
+
+#### 源码目录运行
+
+```bash
+git clone https://github.com/weicj/ai-proxy-hub.git
+cd ai-proxy-hub
+pip install rich
+python3 start.py
+```
+
+#### 便携版发布压缩包
+
+如果使用 GitHub Release 里的 `.tar.gz` 或 `.zip` 压缩包，解压后可直接运行：
+
+```bash
+pip install rich
+python3 start.py
+```
+
+#### Debian / Ubuntu 本地安装包
+
+如果某个发布版本附带 `.deb`，可以直接安装：
+
+```bash
+sudo apt install ./ai-proxy-hub_<version>_all.deb
+```
+
+或者：
+
+```bash
+sudo dpkg -i ai-proxy-hub_<version>_all.deb
+```
+
+### 计划中的包管理器安装命令
+
+下面这些分发方式正在准备中，在对应公共仓库真正上线之前，不应写成“已经可用”：
+
+```bash
+brew install weicj/tap/ai-proxy-hub
+winget install AIProxyHub.AIProxyHub
+sudo apt install ai-proxy-hub
+```
+
 ### 环境要求
 
 - Python `3.9+`
@@ -266,6 +312,12 @@ pip install rich
 ### 启动交互式控制台
 
 ```bash
+python3 start.py
+```
+
+### 使用模块入口启动交互式控制台
+
+```bash
 python3 -m ai_proxy_hub
 ```
 
@@ -276,6 +328,12 @@ ai-proxy-hub
 ```
 
 ### 直接启动 HTTP 服务
+
+```bash
+python3 start.py --serve
+```
+
+### 使用模块入口直接启动 HTTP 服务
 
 ```bash
 python3 -m ai_proxy_hub --serve
@@ -293,7 +351,7 @@ python3 -m ai_proxy_hub --print-paths
 python3 -m ai_proxy_hub --serve --host 127.0.0.1 --port 8799
 ```
 
-安装后也可以直接使用 `ai-proxy-hub` 命令。`router_server.py` 会继续保留作为兼容入口，但不再作为主要文档入口。
+如果是直接运行源码目录，`start.py` 现在是最清晰的启动入口。安装后也可以直接使用 `ai-proxy-hub` 命令。`router_server.py` 仅继续保留为兼容入口。
 
 ## 配置模型
 
@@ -437,25 +495,35 @@ python3 -m unittest discover -s tests -v
 ### 构建发布产物
 
 ```bash
-python3 scripts/build_release.py --version 0.3.0
+python3 scripts/build_release.py --version 0.3.1
 ```
 
 ### 校验发布产物
 
 ```bash
-python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.0
+python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.1
 ```
 
 ### 执行发布前检查
 
 ```bash
-python3 scripts/release_preflight.py --version 0.3.0
+python3 scripts/release_preflight.py --version 0.3.1
 ```
 
 ### 同步当前源码树到本地发布目录
 
 ```bash
-python3 scripts/sync_release_snapshot.py --version 0.3.0
+python3 scripts/sync_release_snapshot.py --version 0.3.1
+```
+
+### 同步生成好的 Homebrew Formula 到 tap 仓库目录
+
+```bash
+python3 scripts/sync_homebrew_tap.py \
+  --formula dist/release-metadata/ai-proxy-hub.rb \
+  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-tap \
+  --tap-repo weicj/homebrew-tap \
+  --version 0.3.1
 ```
 
 ### 执行远程 Linux 冒烟验证
@@ -464,7 +532,7 @@ python3 scripts/sync_release_snapshot.py --version 0.3.0
 python3 scripts/run_remote_linux_smoke.py \
   --ssh user@linux-host \
   --identity-file ~/.ssh/id_ed25519 \
-  --artifact dist/ai-proxy-hub-0.3.0.tar.gz
+  --artifact dist/ai-proxy-hub-0.3.1.tar.gz
 ```
 
 ### 当前产物目标
@@ -492,7 +560,14 @@ python3 scripts/run_remote_linux_smoke.py \
 
 ### 它需要 root 或管理员权限吗？
 
-不需要。正常目标是以普通用户权限运行，并使用当前用户可写的配置目录。
+运行阶段不需要。正常目标是以普通用户权限运行，并使用当前用户可写的配置目录。
+
+但安装阶段如果平台本来就需要提权，用 `sudo` 是完全可以接受的，比如：
+
+- `sudo apt install ./ai-proxy-hub_<version>_all.deb`
+- `sudo dpkg -i ai-proxy-hub_<version>_all.deb`
+
+关键区别在这里：安装可以提权，日常运行仍然应当尽量保持普通用户权限。
 
 ### 它适合直接暴露到公网吗？
 
@@ -509,7 +584,7 @@ python3 scripts/run_remote_linux_smoke.py \
 ## 路线图
 
 - 发布到 PyPI
-- 完整的 Homebrew Tap 工作流
+- 发布 `weicj/homebrew-tap`，让 `brew install weicj/tap/ai-proxy-hub` 可直接使用
 - 面向 APT 的发布流程
 - winget 提交流程
 - 在现有 i18n 结构上扩展更多语言包
