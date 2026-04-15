@@ -314,7 +314,7 @@ sudo dpkg -i ai-proxy-hub_<version>_all.deb
 
 ### 其他包管理器渠道
 
-下面这些公开包管理器链路仍在准备中：
+下面这些公开包管理器链路仍在准备中。仓库现在已经包含这两条链路的本地暂存脚本，但只有真正发布到对应公共渠道后，外部用户才能直接安装：
 
 ```bash
 winget install AIProxyHub.AIProxyHub
@@ -548,6 +548,26 @@ python3 scripts/sync_homebrew_tap.py \
   --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-aiproxyhub \
   --tap-repo weicj/homebrew-aiproxyhub \
   --version 0.3.1
+```
+
+### 同步生成好的 winget 清单到本地暂存目录
+
+```bash
+python3 scripts/sync_winget_manifest.py \
+  --source-dir dist/release-metadata \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/winget-staging \
+  --package-id AIProxyHub.AIProxyHub \
+  --version 0.3.1
+```
+
+### 把构建好的 `.deb` 同步到本地 APT 仓库目录
+
+```bash
+python3 scripts/sync_apt_repo.py \
+  --deb dist/ai-proxy-hub_0.3.1_all.deb \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
+  --distribution stable \
+  --component main
 ```
 
 ### 执行远程 Linux 冒烟验证

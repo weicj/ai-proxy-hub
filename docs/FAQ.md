@@ -76,6 +76,7 @@ Yes. The repository includes tooling for:
 - portable `.tar.gz` and `.zip` artifacts
 - optional `.deb` generation
 - generated metadata for Homebrew and winget-oriented workflows
+- local APT repository staging output from a built `.deb`
 
 ## Is the project already fully ready for package-manager publication?
 

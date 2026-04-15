@@ -52,18 +52,38 @@ python3 scripts/sync_homebrew_tap.py \
   --version 0.3.1
 ```
 
-5. Run external smoke tests.
+5. Stage the generated winget manifests into a local `winget-pkgs` checkout or staging tree.
+
+```bash
+python3 scripts/sync_winget_manifest.py \
+  --source-dir dist-release/release-metadata \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/winget-staging \
+  --package-id AIProxyHub.AIProxyHub \
+  --version 0.3.1
+```
+
+6. If a `.deb` artifact exists, sync it into a local APT repository tree.
+
+```bash
+python3 scripts/sync_apt_repo.py \
+  --deb dist-release/ai-proxy-hub_0.3.1_all.deb \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
+  --distribution stable \
+  --component main
+```
+
+7. Run external smoke tests.
 
 - Linux: use [run_remote_linux_smoke.py](/Users/max/ai-proxy-hub/scripts/run_remote_linux_smoke.py) with `--identity-file` and optional repeated `--ssh-option` values when the remote host needs an explicit SSH key or custom SSH transport settings
 - Windows: use the checklist in [EXTERNAL_TEST_ENV.md](/Users/max/ai-proxy-hub/docs/EXTERNAL_TEST_ENV.md); a reachable Windows VM is an acceptable release target
 
-6. Update release notes.
+8. Update release notes.
 
 - `releases/<version>/notes/RELEASE_STATUS.md`
 - `releases/<version>/notes/RELEASE_CHECKLIST.md`
 - `releases/<version>/notes/PUBLISH_LOG.md`
 
-7. Publish only after the remaining blockers are closed.
+9. Publish only after the remaining blockers are closed.
 
 ## Notes
 
@@ -71,3 +91,5 @@ python3 scripts/sync_homebrew_tap.py \
 - Do not store real SSH passwords, RDP passwords, or API keys in this repository.
 - If the local release root differs from the default, pass `--release-root` explicitly to the sync script.
 - Homebrew self-hosted taps do not require official review, but the tap repository must exist publicly before `brew install weicj/aiproxyhub/ai-proxy-hub` will work.
+- winget becomes publicly installable only after the manifest is accepted into `microsoft/winget-pkgs`.
+- APT becomes publicly installable only after the repository is hosted and signed; the local `apt-repo` tree is staging output, not a public feed by itself.

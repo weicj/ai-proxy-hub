@@ -314,7 +314,7 @@ sudo dpkg -i ai-proxy-hub_<version>_all.deb
 
 ### Other package-manager lanes
 
-The following public package-manager lanes are still being prepared:
+The following public package-manager lanes are still being prepared. The repository now includes local staging scripts for both flows, but they are not publicly installable until those upstream publication steps are completed:
 
 ```bash
 winget install AIProxyHub.AIProxyHub
@@ -548,6 +548,26 @@ python3 scripts/sync_homebrew_tap.py \
   --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-aiproxyhub \
   --tap-repo weicj/homebrew-aiproxyhub \
   --version 0.3.1
+```
+
+### Sync generated winget manifests into a local staging tree
+
+```bash
+python3 scripts/sync_winget_manifest.py \
+  --source-dir dist/release-metadata \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/winget-staging \
+  --package-id AIProxyHub.AIProxyHub \
+  --version 0.3.1
+```
+
+### Sync a built `.deb` into a local APT repository tree
+
+```bash
+python3 scripts/sync_apt_repo.py \
+  --deb dist/ai-proxy-hub_0.3.1_all.deb \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
+  --distribution stable \
+  --component main
 ```
 
 ### Run a remote Linux smoke test

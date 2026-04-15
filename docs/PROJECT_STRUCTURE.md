@@ -22,7 +22,7 @@
 - `tests/`
   自动化测试，覆盖路由、故障切换、路径解析和配置行为。
 - `scripts/`
-  构建和发布脚本，例如 GitHub Release、Homebrew tap 同步、winget、`.deb` 产物生成、发布产物校验、发布快照同步、远程 Linux 冒烟验证。
+  构建和发布脚本，例如 GitHub Release、Homebrew tap 同步、winget 清单同步、APT 仓库生成、`.deb` 产物生成、发布产物校验、发布快照同步、远程 Linux 冒烟验证。
 - `examples/`
   示例配置，只放脱敏样例，不放真实密钥，也可放外部测试环境变量模板。
 - `docs/`

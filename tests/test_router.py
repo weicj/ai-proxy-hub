@@ -41,6 +41,20 @@ assert SYNC_HOMEBREW_TAP_SPEC and SYNC_HOMEBREW_TAP_SPEC.loader
 sync_homebrew_tap_module = importlib.util.module_from_spec(SYNC_HOMEBREW_TAP_SPEC)
 SYNC_HOMEBREW_TAP_SPEC.loader.exec_module(sync_homebrew_tap_module)
 
+SYNC_WINGET_MANIFEST_SPEC = importlib.util.spec_from_file_location(
+    "sync_winget_manifest_module", PROJECT_ROOT / "scripts" / "sync_winget_manifest.py"
+)
+assert SYNC_WINGET_MANIFEST_SPEC and SYNC_WINGET_MANIFEST_SPEC.loader
+sync_winget_manifest_module = importlib.util.module_from_spec(SYNC_WINGET_MANIFEST_SPEC)
+SYNC_WINGET_MANIFEST_SPEC.loader.exec_module(sync_winget_manifest_module)
+
+SYNC_APT_REPO_SPEC = importlib.util.spec_from_file_location(
+    "sync_apt_repo_module", PROJECT_ROOT / "scripts" / "sync_apt_repo.py"
+)
+assert SYNC_APT_REPO_SPEC and SYNC_APT_REPO_SPEC.loader
+sync_apt_repo_module = importlib.util.module_from_spec(SYNC_APT_REPO_SPEC)
+SYNC_APT_REPO_SPEC.loader.exec_module(sync_apt_repo_module)
+
 import router_server as router_server_module  # noqa: E402
 from router_server import (  # noqa: E402
     APP_NAME,
@@ -2055,6 +2069,77 @@ class PlatformSupportTest(unittest.TestCase):
             self.assertIn("ai-proxy-hub", tap_readme)
             self.assertIn("aiproxyhub", tap_readme)
             self.assertTrue((temp_path / "homebrew-aiproxyhub" / ".gitignore").exists())
+
+    def test_sync_winget_manifest_writes_expected_manifest_tree(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            source_dir = temp_path / "release-metadata"
+            source_dir.mkdir(parents=True, exist_ok=True)
+            for name in ["winget.yaml", "winget.installer.yaml", "winget.locale.en-US.yaml"]:
+                (source_dir / name).write_text(f"# {name}\n", encoding="utf-8")
+
+            target_dir = sync_winget_manifest_module.sync_winget_manifest(
+                source_dir,
+                temp_path / "winget-staging",
+                "AIProxyHub.AIProxyHub",
+                "0.3.1",
+            )
+
+            self.assertEqual(
+                target_dir,
+                (temp_path / "winget-staging" / "manifests" / "a" / "AIProxyHub" / "AIProxyHub" / "0.3.1").resolve(),
+            )
+            self.assertTrue((target_dir / "AIProxyHub.AIProxyHub.yaml").exists())
+            self.assertTrue((target_dir / "AIProxyHub.AIProxyHub.installer.yaml").exists())
+            self.assertTrue((target_dir / "AIProxyHub.AIProxyHub.locale.en-US.yaml").exists())
+            staging_readme = (temp_path / "winget-staging" / "README.md").read_text(encoding="utf-8")
+            self.assertIn("AIProxyHub.AIProxyHub", staging_readme)
+            self.assertIn("winget-pkgs", staging_readme)
+            self.assertTrue((temp_path / "winget-staging" / ".gitignore").exists())
+
+    def test_sync_apt_repo_builds_packages_and_release(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            deb_path = temp_path / "ai-proxy-hub_0.3.1_all.deb"
+            deb_path.write_bytes(b"deb-artifact")
+            control_output = "\n".join(
+                [
+                    "Package: ai-proxy-hub",
+                    "Version: 0.3.1",
+                    "Section: utils",
+                    "Priority: optional",
+                    "Architecture: all",
+                    "Maintainer: weicj",
+                    "Depends: python3 (>= 3.9)",
+                    "Description: Cross-platform local AI proxy hub",
+                    " rich CLI and Web dashboard",
+                ]
+            )
+            completed = mock.Mock(stdout=control_output)
+            with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
+                repo_root = sync_apt_repo_module.sync_apt_repo(
+                    deb_path,
+                    temp_path / "apt-repo",
+                    "stable",
+                    "main",
+                )
+
+            copied_deb = repo_root / "pool" / "main" / "a" / "ai-proxy-hub" / deb_path.name
+            self.assertTrue(copied_deb.exists())
+            packages_path = repo_root / "dists" / "stable" / "main" / "binary-all" / "Packages"
+            packages_text = packages_path.read_text(encoding="utf-8")
+            self.assertIn("Package: ai-proxy-hub", packages_text)
+            self.assertIn(f"Filename: pool/main/a/ai-proxy-hub/{deb_path.name}", packages_text)
+            self.assertIn("Description: Cross-platform local AI proxy hub\n rich CLI and Web dashboard", packages_text)
+            self.assertTrue((repo_root / "dists" / "stable" / "main" / "binary-all" / "Packages.gz").exists())
+            release_text = (repo_root / "dists" / "stable" / "Release").read_text(encoding="utf-8")
+            self.assertIn("Architectures: all", release_text)
+            self.assertIn("Components: main", release_text)
+            self.assertIn("dists/stable/main/binary-all/Packages", release_text)
+            self.assertIn("dists/stable/main/binary-all/Packages.gz", release_text)
+            apt_readme = (repo_root / "README.md").read_text(encoding="utf-8")
+            self.assertIn("trusted=yes", apt_readme)
+            self.assertTrue((repo_root / ".gitignore").exists())
 
     def test_homebrew_formula_uses_dynamic_python_and_both_launchers(self):
         formula = build_release_module.homebrew_formula(
