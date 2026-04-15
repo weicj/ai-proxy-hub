@@ -1,7 +1,7 @@
 # AI Proxy Hub FAQ
 
 [![Docs](https://img.shields.io/badge/Docs-FAQ-2563eb)](../README.md)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 

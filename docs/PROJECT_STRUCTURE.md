@@ -4,8 +4,10 @@
 
 - `ai_proxy_hub/`
   后端主包，按职责拆成 `constants`、`utils`、`protocols`、`local_keys`、`path_utils`、`app_paths`、`file_io`、`config_logic`、`config`、`network`、`client_switch`、`store`、`http_server`、`service_controller`、`service_controller_helpers`、`cli_app`、`entrypoints` 等模块。
-- `start.py`
+- `aiproxyhub.py`
   当前推荐的顶层脚本入口，适合直接在源码目录下运行。
+- `start.py`
+  兼容脚本入口，保留旧命令路径并转发到 `aiproxyhub.py`。
 - `router_server.py`
   兼容入口层，保留旧导入路径，内部转发到 `ai_proxy_hub`。
 - `ai_proxy_hub/__main__.py`

@@ -16,6 +16,7 @@ from pathlib import Path
 APP_NAME = "AI Proxy Hub"
 APP_SLUG = "ai-proxy-hub"
 DEFAULT_FILES = [
+    "aiproxyhub.py",
     "start.py",
     "router_server.py",
     "cli_modern.py",

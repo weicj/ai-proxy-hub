@@ -6,8 +6,8 @@ import shutil
 from pathlib import Path
 
 
-DEFAULT_TAP_ROOT = Path.home() / "Develop" / "AI Proxy Hub" / "homebrew-tap"
-DEFAULT_TAP_REPO = "weicj/homebrew-tap"
+DEFAULT_TAP_ROOT = Path.home() / "Develop" / "AI Proxy Hub" / "homebrew-aiproxyhub"
+DEFAULT_TAP_REPO = "weicj/homebrew-aiproxyhub"
 FORMULA_FILE_NAME = "ai-proxy-hub.rb"
 
 

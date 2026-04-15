@@ -20,6 +20,7 @@ import build_release
 
 REQUIRED_PATHS = [
     "LICENSE",
+    "aiproxyhub.py",
     "ai_proxy_hub/__main__.py",
     "cli_modern.py",
     "ai_proxy_hub/__init__.py",

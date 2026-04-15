@@ -30,7 +30,7 @@ ai-proxy-hub = "ai_proxy_hub.entrypoints:main"
 
 [tool.setuptools]
 packages = ["ai_proxy_hub"]
-py-modules = ["start", "router_server", "cli_modern"]
+py-modules = ["aiproxyhub", "start", "router_server", "cli_modern"]
 license-files = ["LICENSE", "NOTICE"]
 include-package-data = false
 

@@ -7,7 +7,7 @@ English | [简体中文](README.zh-CN.md)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB)
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-0f766e)
 ![Protocols](https://img.shields.io/badge/Protocols-Codex%20%7C%20Claude%20%7C%20Gemini-7c3aed)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 [![License](https://img.shields.io/badge/License-Apache%202.0-d97706)](LICENSE)
@@ -270,7 +270,7 @@ The repository keeps the backend, Web frontend, CLI runtime, release tooling, an
 git clone https://github.com/weicj/ai-proxy-hub.git
 cd ai-proxy-hub
 pip install rich
-python3 start.py
+python3 aiproxyhub.py
 ```
 
 #### Portable release archive
@@ -279,7 +279,7 @@ Use the GitHub Release `.tar.gz` or `.zip` artifact, extract it locally, then ru
 
 ```bash
 pip install rich
-python3 start.py
+python3 aiproxyhub.py
 ```
 
 #### Debian / Ubuntu local package
@@ -301,7 +301,7 @@ sudo dpkg -i ai-proxy-hub_<version>_all.deb
 Homebrew tap is published in preview. If you want the lowest-risk install path right now, prefer source checkout or the GitHub Release archive first.
 
 ```bash
-brew tap weicj/tap
+brew tap weicj/aiproxyhub
 brew install ai-proxy-hub
 ```
 
@@ -326,7 +326,7 @@ pip install rich
 ### Start the interactive console
 
 ```bash
-python3 start.py
+python3 aiproxyhub.py
 ```
 
 ### Start the interactive console via module entrypoint
@@ -344,7 +344,7 @@ ai-proxy-hub
 ### Start the HTTP service directly
 
 ```bash
-python3 start.py --serve
+python3 aiproxyhub.py --serve
 ```
 
 ### Start the HTTP service via module entrypoint
@@ -365,7 +365,7 @@ python3 -m ai_proxy_hub --print-paths
 python3 -m ai_proxy_hub --serve --host 127.0.0.1 --port 8799
 ```
 
-For a source checkout, `start.py` is now the clearest launcher. The package command `ai-proxy-hub` provides the same entrypoint after installation. The legacy `router_server.py` file is kept only for backward compatibility.
+For a source checkout, `aiproxyhub.py` is now the clearest launcher. The package command `ai-proxy-hub` provides the same entrypoint after installation. The older `start.py` and `router_server.py` files are kept only for backward compatibility.
 
 ## Configuration Model
 
@@ -535,8 +535,8 @@ python3 scripts/sync_release_snapshot.py --version 0.3.1
 ```bash
 python3 scripts/sync_homebrew_tap.py \
   --formula dist/release-metadata/ai-proxy-hub.rb \
-  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-tap \
-  --tap-repo weicj/homebrew-tap \
+  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-aiproxyhub \
+  --tap-repo weicj/homebrew-aiproxyhub \
   --version 0.3.1
 ```
 

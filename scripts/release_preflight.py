@@ -19,6 +19,7 @@ REQUIRED_FILES = [
     "LICENSE",
     "NOTICE",
     "pyproject.toml",
+    "aiproxyhub.py",
     "start.py",
     "router_server.py",
     "cli_modern.py",

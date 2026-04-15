@@ -1,7 +1,7 @@
 # AI Proxy Hub Release Workflow
 
 [![Release Doc](https://img.shields.io/badge/Workflow-release-2563eb)](../README.md)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 
@@ -47,8 +47,8 @@ python3 scripts/build_release.py \
 
 python3 scripts/sync_homebrew_tap.py \
   --formula dist-release/release-metadata/ai-proxy-hub.rb \
-  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-tap \
-  --tap-repo weicj/homebrew-tap \
+  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-aiproxyhub \
+  --tap-repo weicj/homebrew-aiproxyhub \
   --version 0.3.1
 ```
 
@@ -70,4 +70,4 @@ python3 scripts/sync_homebrew_tap.py \
 - The release snapshot intentionally excludes local runtime config, logs, temp files, and state files.
 - Do not store real SSH passwords, RDP passwords, or API keys in this repository.
 - If the local release root differs from the default, pass `--release-root` explicitly to the sync script.
-- Homebrew self-hosted taps do not require official review, but the tap repository must exist publicly before `brew install weicj/tap/ai-proxy-hub` will work.
+- Homebrew self-hosted taps do not require official review, but the tap repository must exist publicly before `brew install weicj/aiproxyhub/ai-proxy-hub` will work.

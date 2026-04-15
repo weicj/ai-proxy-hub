@@ -7,7 +7,7 @@
 ## [Unreleased]
 
 ### 变更
-- 新增 `start.py` 作为更直观的顶层启动入口，`router_server.py` 继续保留为兼容别名
+- 新增 `aiproxyhub.py` 作为新的顶层推荐启动入口，`start.py` 与 `router_server.py` 继续保留为兼容别名
 - Web 底部项目信息将收敛为更轻量的 footer 展示
 
 ## [0.3.1] - 2026-04-14

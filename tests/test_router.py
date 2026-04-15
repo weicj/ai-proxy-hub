@@ -1977,6 +1977,7 @@ class PlatformSupportTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tempdir:
             staging_root = build_release_module.stage_release_tree(PROJECT_ROOT, "0.0.0-test", Path(tempdir))
             self.assertTrue((staging_root / "LICENSE").exists())
+            self.assertTrue((staging_root / "aiproxyhub.py").exists())
             self.assertTrue((staging_root / "start.py").exists())
             self.assertTrue((staging_root / "router_server.py").exists())
             self.assertTrue((staging_root / "ai_proxy_hub" / "__main__.py").exists())
@@ -1995,6 +1996,7 @@ class PlatformSupportTest(unittest.TestCase):
                 ".gitignore": "*.pyc\n",
                 "README.md": "# demo\n",
                 "pyproject.toml": "[project]\nname='demo'\n",
+                "aiproxyhub.py": "print('hub')\n",
                 "start.py": "print('start')\n",
                 "router_server.py": "print('ok')\n",
                 "cli_modern.py": "print('cli')\n",
@@ -2017,6 +2019,7 @@ class PlatformSupportTest(unittest.TestCase):
 
             self.assertTrue((snapshot_dir / ".github" / "workflows" / "ci.yml").exists())
             self.assertTrue((snapshot_dir / "ai_proxy_hub" / "__init__.py").exists())
+            self.assertTrue((snapshot_dir / "aiproxyhub.py").exists())
             self.assertTrue((snapshot_dir / "start.py").exists())
             self.assertTrue((snapshot_dir / "scripts" / "build_release.py").exists())
             self.assertTrue((snapshot_dir / "tests" / "test_demo.py").exists())
@@ -2034,18 +2037,18 @@ class PlatformSupportTest(unittest.TestCase):
 
             target_formula = sync_homebrew_tap_module.sync_homebrew_tap(
                 formula_path,
-                temp_path / "homebrew-tap",
-                "weicj/homebrew-tap",
+                temp_path / "homebrew-aiproxyhub",
+                "weicj/homebrew-aiproxyhub",
                 version="0.3.1",
             )
 
             self.assertEqual(target_formula.name, "ai-proxy-hub.rb")
             self.assertTrue(target_formula.exists())
             self.assertIn("class AiProxyHub < Formula", target_formula.read_text(encoding="utf-8"))
-            tap_readme = (temp_path / "homebrew-tap" / "README.md").read_text(encoding="utf-8")
-            self.assertIn("brew tap weicj/tap", tap_readme)
-            self.assertIn("brew install weicj/tap/ai-proxy-hub", tap_readme)
-            self.assertTrue((temp_path / "homebrew-tap" / ".gitignore").exists())
+            tap_readme = (temp_path / "homebrew-aiproxyhub" / "README.md").read_text(encoding="utf-8")
+            self.assertIn("brew tap weicj/aiproxyhub", tap_readme)
+            self.assertIn("brew install weicj/aiproxyhub/ai-proxy-hub", tap_readme)
+            self.assertTrue((temp_path / "homebrew-aiproxyhub" / ".gitignore").exists())
 
     def test_index_html_references_extracted_stylesheet(self):
         index_text = (PROJECT_ROOT / "web" / "index.html").read_text(encoding="utf-8")

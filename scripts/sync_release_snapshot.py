@@ -15,6 +15,7 @@ SOURCE_SNAPSHOT_FILES = [
     "MANIFEST.in",
     "README.md",
     "pyproject.toml",
+    "aiproxyhub.py",
     "start.py",
     "router_server.py",
     "cli_modern.py",

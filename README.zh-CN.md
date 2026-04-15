@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB)
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-0f766e)
 ![Protocols](https://img.shields.io/badge/Protocols-Codex%20%7C%20Claude%20%7C%20Gemini-7c3aed)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 [![License](https://img.shields.io/badge/License-Apache%202.0-d97706)](LICENSE)
@@ -270,7 +270,7 @@ AI Proxy Hub 本地入口
 git clone https://github.com/weicj/ai-proxy-hub.git
 cd ai-proxy-hub
 pip install rich
-python3 start.py
+python3 aiproxyhub.py
 ```
 
 #### 便携版发布压缩包
@@ -279,7 +279,7 @@ python3 start.py
 
 ```bash
 pip install rich
-python3 start.py
+python3 aiproxyhub.py
 ```
 
 #### Debian / Ubuntu 本地安装包
@@ -301,7 +301,7 @@ sudo dpkg -i ai-proxy-hub_<version>_all.deb
 Homebrew tap 已经公开，但目前仍属于预览阶段。如果你想走最稳妥的安装路径，当前仍建议优先使用源码目录或 GitHub Release 压缩包。
 
 ```bash
-brew tap weicj/tap
+brew tap weicj/aiproxyhub
 brew install ai-proxy-hub
 ```
 
@@ -326,7 +326,7 @@ pip install rich
 ### 启动交互式控制台
 
 ```bash
-python3 start.py
+python3 aiproxyhub.py
 ```
 
 ### 使用模块入口启动交互式控制台
@@ -344,7 +344,7 @@ ai-proxy-hub
 ### 直接启动 HTTP 服务
 
 ```bash
-python3 start.py --serve
+python3 aiproxyhub.py --serve
 ```
 
 ### 使用模块入口直接启动 HTTP 服务
@@ -365,7 +365,7 @@ python3 -m ai_proxy_hub --print-paths
 python3 -m ai_proxy_hub --serve --host 127.0.0.1 --port 8799
 ```
 
-如果是直接运行源码目录，`start.py` 现在是最清晰的启动入口。安装后也可以直接使用 `ai-proxy-hub` 命令。`router_server.py` 仅继续保留为兼容入口。
+如果是直接运行源码目录，`aiproxyhub.py` 现在是最清晰的启动入口。安装后也可以直接使用 `ai-proxy-hub` 命令。较旧的 `start.py` 和 `router_server.py` 仅继续保留为兼容入口。
 
 ## 配置模型
 
@@ -535,8 +535,8 @@ python3 scripts/sync_release_snapshot.py --version 0.3.1
 ```bash
 python3 scripts/sync_homebrew_tap.py \
   --formula dist/release-metadata/ai-proxy-hub.rb \
-  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-tap \
-  --tap-repo weicj/homebrew-tap \
+  --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-aiproxyhub \
+  --tap-repo weicj/homebrew-aiproxyhub \
   --version 0.3.1
 ```
 
