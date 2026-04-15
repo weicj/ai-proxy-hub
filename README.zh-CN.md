@@ -305,6 +305,13 @@ brew tap weicj/aiproxyhub
 brew install ai-proxy-hub
 ```
 
+安装完成后，可以直接在 shell 里启动：
+
+```bash
+ai-proxy-hub
+aiproxyhub
+```
+
 下面这些公开包管理器链路仍在准备中：
 
 ```bash
@@ -339,6 +346,7 @@ python3 -m ai_proxy_hub
 
 ```bash
 ai-proxy-hub
+aiproxyhub
 ```
 
 ### 直接启动 HTTP 服务

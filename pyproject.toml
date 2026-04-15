@@ -27,6 +27,7 @@ dependencies = [
 
 [project.scripts]
 ai-proxy-hub = "ai_proxy_hub.entrypoints:main"
+aiproxyhub = "ai_proxy_hub.entrypoints:main"
 
 [tool.setuptools]
 packages = ["ai_proxy_hub"]

@@ -1980,6 +1980,10 @@ class PlatformSupportTest(unittest.TestCase):
             self.assertTrue((staging_root / "aiproxyhub.py").exists())
             self.assertTrue((staging_root / "start.py").exists())
             self.assertTrue((staging_root / "router_server.py").exists())
+            self.assertTrue((staging_root / "bin" / "ai-proxy-hub").exists())
+            self.assertTrue((staging_root / "bin" / "aiproxyhub").exists())
+            self.assertTrue((staging_root / "bin" / "ai-proxy-hub.cmd").exists())
+            self.assertTrue((staging_root / "bin" / "aiproxyhub.cmd").exists())
             self.assertTrue((staging_root / "ai_proxy_hub" / "__main__.py").exists())
             self.assertTrue((staging_root / "cli_modern.py").exists())
             self.assertTrue((staging_root / "ai_proxy_hub" / "__init__.py").exists())
@@ -2048,7 +2052,24 @@ class PlatformSupportTest(unittest.TestCase):
             tap_readme = (temp_path / "homebrew-aiproxyhub" / "README.md").read_text(encoding="utf-8")
             self.assertIn("brew tap weicj/aiproxyhub", tap_readme)
             self.assertIn("brew install weicj/aiproxyhub/ai-proxy-hub", tap_readme)
+            self.assertIn("ai-proxy-hub", tap_readme)
+            self.assertIn("aiproxyhub", tap_readme)
             self.assertTrue((temp_path / "homebrew-aiproxyhub" / ".gitignore").exists())
+
+    def test_homebrew_formula_uses_dynamic_python_and_both_launchers(self):
+        formula = build_release_module.homebrew_formula(
+            "0.3.1",
+            "https://github.com/weicj/ai-proxy-hub",
+            "https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1/ai-proxy-hub-0.3.1.tar.gz",
+            "deadbeef",
+            ["aiproxyhub.py", "ai_proxy_hub", "web"],
+        )
+        self.assertIn('depends_on "python"', formula)
+        self.assertNotIn('depends_on "python@3.11"', formula)
+        self.assertIn('Formula["python"].opt_bin', formula)
+        self.assertIn('(bin/"ai-proxy-hub").write <<~EOS', formula)
+        self.assertIn('(bin/"aiproxyhub").write <<~EOS', formula)
+        self.assertIn('shell_output("#{bin}/aiproxyhub --print-paths")', formula)
 
     def test_index_html_references_extracted_stylesheet(self):
         index_text = (PROJECT_ROOT / "web" / "index.html").read_text(encoding="utf-8")

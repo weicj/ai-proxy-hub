@@ -15,6 +15,8 @@ from pathlib import Path
 
 APP_NAME = "AI Proxy Hub"
 APP_SLUG = "ai-proxy-hub"
+APP_COMMAND_ALIASES = [APP_SLUG, "aiproxyhub"]
+HOMEBREW_PYTHON_FORMULA = "python"
 DEFAULT_FILES = [
     "aiproxyhub.py",
     "start.py",
@@ -76,26 +78,27 @@ def stage_release_tree(root: Path, version: str, output_dir: Path) -> Path:
         copy_release_entry(source, target)
     bin_dir = staging_root / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
-    unix_launcher = bin_dir / APP_SLUG
-    unix_launcher.write_text(
-        "#!/usr/bin/env sh\n"
-        'SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
-        'cd "$SCRIPT_DIR/.."\n'
-        'exec python3 -m ai_proxy_hub "$@"\n',
-        encoding="utf-8",
-    )
-    os.chmod(unix_launcher, 0o755)
-    windows_launcher = bin_dir / f"{APP_SLUG}.cmd"
-    windows_launcher.write_text(
-        "@echo off\r\n"
-        "set SCRIPT_DIR=%~dp0\r\n"
-        'pushd "%SCRIPT_DIR%.."\r\n'
-        "py -3 -m ai_proxy_hub %*\r\n"
-        "set EXITCODE=%ERRORLEVEL%\r\n"
-        "popd\r\n"
-        "exit /b %EXITCODE%\r\n",
-        encoding="utf-8",
-    )
+    for command_name in APP_COMMAND_ALIASES:
+        unix_launcher = bin_dir / command_name
+        unix_launcher.write_text(
+            "#!/usr/bin/env sh\n"
+            'SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\n'
+            'cd "$SCRIPT_DIR/.."\n'
+            'exec python3 -m ai_proxy_hub "$@"\n',
+            encoding="utf-8",
+        )
+        os.chmod(unix_launcher, 0o755)
+        windows_launcher = bin_dir / f"{command_name}.cmd"
+        windows_launcher.write_text(
+            "@echo off\r\n"
+            "set SCRIPT_DIR=%~dp0\r\n"
+            'pushd "%SCRIPT_DIR%.."\r\n'
+            "py -3 -m ai_proxy_hub %*\r\n"
+            "set EXITCODE=%ERRORLEVEL%\r\n"
+            "popd\r\n"
+            "exit /b %EXITCODE%\r\n",
+            encoding="utf-8",
+        )
     return staging_root
 
 
@@ -138,14 +141,15 @@ def build_deb(root: Path, version: str, output_dir: Path) -> Path | None:
         ),
         encoding="utf-8",
     )
-    launcher = package_root / "usr" / "bin" / APP_SLUG
-    launcher.write_text(
-        "#!/usr/bin/env sh\n"
-        f'cd "/usr/lib/{APP_SLUG}"\n'
-        'exec python3 -m ai_proxy_hub "$@"\n',
-        encoding="utf-8",
-    )
-    os.chmod(launcher, 0o755)
+    for command_name in APP_COMMAND_ALIASES:
+        launcher = package_root / "usr" / "bin" / command_name
+        launcher.write_text(
+            "#!/usr/bin/env sh\n"
+            f'cd "/usr/lib/{APP_SLUG}"\n'
+            'exec python3 -m ai_proxy_hub "$@"\n',
+            encoding="utf-8",
+        )
+        os.chmod(launcher, 0o755)
     for source in release_entries(root):
         target = runtime_root / source.relative_to(root)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -162,33 +166,41 @@ def build_deb(root: Path, version: str, output_dir: Path) -> Path | None:
 
 def homebrew_formula(version: str, homepage: str, download_url: str, sha256: str, install_entries: list[str]) -> str:
     install_clause = ", ".join(f'"{entry}"' for entry in install_entries)
-    return textwrap.dedent(
-        f"""\
-        class AiProxyHub < Formula
-          desc "Cross-platform local AI proxy hub with CLI and web dashboard"
-          homepage "{homepage}"
-          url "{download_url}"
-          sha256 "{sha256}"
-          license "Apache-2.0"
-          depends_on "python@3.11"
-
-          def install
-            libexec.install {install_clause}
-            (bin/"ai-proxy-hub").write <<~EOS
-              #!/bin/bash
-              cd "#{{libexec}}"
-              exec "#{{Formula["python@3.11"].opt_bin}}/python3" -m ai_proxy_hub "$@"
-            EOS
-          end
-
-          test do
-            output = shell_output("#{{bin}}/ai-proxy-hub --print-paths")
-            assert_match "{APP_NAME}", output
-            assert_match "#{{libexec}}/web", output
-          end
-        end
-        """
+    lines = [
+        "class AiProxyHub < Formula",
+        '  desc "Cross-platform local AI proxy hub with CLI and web dashboard"',
+        f'  homepage "{homepage}"',
+        f'  url "{download_url}"',
+        f'  sha256 "{sha256}"',
+        '  license "Apache-2.0"',
+        f'  depends_on "{HOMEBREW_PYTHON_FORMULA}"',
+        "",
+        "  def install",
+        f"    libexec.install {install_clause}",
+    ]
+    for command_name in APP_COMMAND_ALIASES:
+        lines.extend(
+            [
+                f'    (bin/"{command_name}").write <<~EOS',
+                "      #!/bin/bash",
+                '      cd "#{libexec}"',
+                f'      exec "#{{Formula["{HOMEBREW_PYTHON_FORMULA}"].opt_bin}}/python3" -m ai_proxy_hub "$@"',
+                "    EOS",
+            ]
+        )
+    lines.extend(
+        [
+            "  end",
+            "",
+            "  test do",
+            '    output = shell_output("#{bin}/aiproxyhub --print-paths")',
+            f'    assert_match "{APP_NAME}", output',
+            '    assert_match "#{libexec}/web", output',
+            "  end",
+            "end",
+        ]
     )
+    return "\n".join(lines) + "\n"
 
 
 def winget_manifest(version: str, homepage: str, download_url: str, sha256: str) -> tuple[str, str, str]:
@@ -218,6 +230,8 @@ def winget_manifest(version: str, homepage: str, download_url: str, sha256: str)
             NestedInstallerFiles:
               - RelativeFilePath: bin\\{APP_SLUG}.cmd
                 PortableCommandAlias: {APP_SLUG}
+              - RelativeFilePath: bin\\aiproxyhub.cmd
+                PortableCommandAlias: aiproxyhub
             InstallerUrl: {download_url}
             InstallerSha256: {sha256}
         ManifestType: installer

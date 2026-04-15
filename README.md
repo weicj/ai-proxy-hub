@@ -305,6 +305,13 @@ brew tap weicj/aiproxyhub
 brew install ai-proxy-hub
 ```
 
+After installation, start it directly from the shell:
+
+```bash
+ai-proxy-hub
+aiproxyhub
+```
+
 The following public package-manager lanes are still being prepared:
 
 ```bash
@@ -339,6 +346,7 @@ If installed as a package:
 
 ```bash
 ai-proxy-hub
+aiproxyhub
 ```
 
 ### Start the HTTP service directly
