@@ -1,7 +1,7 @@
 # AI Proxy Hub Release Workflow
 
 [![Release Doc](https://img.shields.io/badge/Workflow-release-2563eb)](../README.md)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
+[![Homebrew](https://img.shields.io/badge/Homebrew-available-16a34a)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 

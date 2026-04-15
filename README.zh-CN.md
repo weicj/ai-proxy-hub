@@ -7,7 +7,7 @@
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB)
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-0f766e)
 ![Protocols](https://img.shields.io/badge/Protocols-Codex%20%7C%20Claude%20%7C%20Gemini-7c3aed)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
+[![Homebrew](https://img.shields.io/badge/Homebrew-available-16a34a)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 [![License](https://img.shields.io/badge/License-Apache%202.0-d97706)](LICENSE)
@@ -262,7 +262,23 @@ AI Proxy Hub 本地入口
 
 ### 安装方式
 
-### 现在就可以使用
+### macOS 推荐安装方式：Homebrew
+
+对于大多数 macOS 用户，Homebrew 现在是最简单的安装路径：
+
+```bash
+brew tap weicj/aiproxyhub
+brew install ai-proxy-hub
+```
+
+安装完成后，可以直接在 shell 里启动：
+
+```bash
+ai-proxy-hub
+aiproxyhub
+```
+
+### 其他安装方式
 
 #### 源码目录运行
 
@@ -296,21 +312,7 @@ sudo apt install ./ai-proxy-hub_<version>_all.deb
 sudo dpkg -i ai-proxy-hub_<version>_all.deb
 ```
 
-### 包管理器渠道
-
-Homebrew tap 已经公开，但目前仍属于预览阶段。如果你想走最稳妥的安装路径，当前仍建议优先使用源码目录或 GitHub Release 压缩包。
-
-```bash
-brew tap weicj/aiproxyhub
-brew install ai-proxy-hub
-```
-
-安装完成后，可以直接在 shell 里启动：
-
-```bash
-ai-proxy-hub
-aiproxyhub
-```
+### 其他包管理器渠道
 
 下面这些公开包管理器链路仍在准备中：
 

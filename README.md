@@ -7,7 +7,7 @@ English | [简体中文](README.zh-CN.md)
 ![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB)
 ![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-0f766e)
 ![Protocols](https://img.shields.io/badge/Protocols-Codex%20%7C%20Claude%20%7C%20Gemini-7c3aed)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
+[![Homebrew](https://img.shields.io/badge/Homebrew-available-16a34a)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 [![License](https://img.shields.io/badge/License-Apache%202.0-d97706)](LICENSE)
@@ -262,7 +262,23 @@ The repository keeps the backend, Web frontend, CLI runtime, release tooling, an
 
 ### Installation
 
-### Available now
+### Recommended on macOS: Homebrew
+
+For most macOS users, Homebrew is now the simplest installation path:
+
+```bash
+brew tap weicj/aiproxyhub
+brew install ai-proxy-hub
+```
+
+After installation, start it directly from the shell:
+
+```bash
+ai-proxy-hub
+aiproxyhub
+```
+
+### Other install paths
 
 #### Source checkout
 
@@ -296,21 +312,7 @@ or:
 sudo dpkg -i ai-proxy-hub_<version>_all.deb
 ```
 
-### Package-manager channels
-
-Homebrew tap is published in preview. If you want the lowest-risk install path right now, prefer source checkout or the GitHub Release archive first.
-
-```bash
-brew tap weicj/aiproxyhub
-brew install ai-proxy-hub
-```
-
-After installation, start it directly from the shell:
-
-```bash
-ai-proxy-hub
-aiproxyhub
-```
+### Other package-manager lanes
 
 The following public package-manager lanes are still being prepared:
 

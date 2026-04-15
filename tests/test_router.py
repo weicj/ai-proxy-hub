@@ -2064,11 +2064,14 @@ class PlatformSupportTest(unittest.TestCase):
             "deadbeef",
             ["aiproxyhub.py", "ai_proxy_hub", "web"],
         )
+        self.assertIn("include Language::Python::Virtualenv", formula)
         self.assertIn('depends_on "python"', formula)
         self.assertNotIn('depends_on "python@3.11"', formula)
-        self.assertIn('Formula["python"].opt_bin', formula)
-        self.assertIn('(bin/"ai-proxy-hub").write <<~EOS', formula)
-        self.assertIn('(bin/"aiproxyhub").write <<~EOS', formula)
+        self.assertIn('resource "rich" do', formula)
+        self.assertIn('resource "markdown-it-py" do', formula)
+        self.assertIn('resource "mdurl" do', formula)
+        self.assertIn('resource "pygments" do', formula)
+        self.assertIn("virtualenv_install_with_resources", formula)
         self.assertIn('shell_output("#{bin}/aiproxyhub --print-paths")', formula)
 
     def test_index_html_references_extracted_stylesheet(self):

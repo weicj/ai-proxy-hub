@@ -17,6 +17,32 @@ APP_NAME = "AI Proxy Hub"
 APP_SLUG = "ai-proxy-hub"
 APP_COMMAND_ALIASES = [APP_SLUG, "aiproxyhub"]
 HOMEBREW_PYTHON_FORMULA = "python"
+HOMEBREW_PYTHON_RESOURCES = [
+    {
+        "name": "rich",
+        "version": "13.9.4",
+        "url": "https://files.pythonhosted.org/packages/ab/3a/0316b28d0761c6734d6bc14e770d85506c986c85ffb239e688eeaab2c2bc/rich-13.9.4.tar.gz",
+        "sha256": "439594978a49a09530cff7ebc4b5c7103ef57baf48d5ea3184f21d9a2befa098",
+    },
+    {
+        "name": "markdown-it-py",
+        "version": "3.0.0",
+        "url": "https://files.pythonhosted.org/packages/38/71/3b932df36c1a044d397a1f92d1cf91ee0a503d91e470cbd670aa66b07ed0/markdown-it-py-3.0.0.tar.gz",
+        "sha256": "e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb",
+    },
+    {
+        "name": "mdurl",
+        "version": "0.1.2",
+        "url": "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz",
+        "sha256": "bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba",
+    },
+    {
+        "name": "pygments",
+        "version": "2.19.2",
+        "url": "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz",
+        "sha256": "636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887",
+    },
+]
 DEFAULT_FILES = [
     "aiproxyhub.py",
     "start.py",
@@ -165,31 +191,33 @@ def build_deb(root: Path, version: str, output_dir: Path) -> Path | None:
 
 
 def homebrew_formula(version: str, homepage: str, download_url: str, sha256: str, install_entries: list[str]) -> str:
-    install_clause = ", ".join(f'"{entry}"' for entry in install_entries)
+    _ = install_entries
     lines = [
         "class AiProxyHub < Formula",
+        "  include Language::Python::Virtualenv",
+        "",
         '  desc "Cross-platform local AI proxy hub with CLI and web dashboard"',
         f'  homepage "{homepage}"',
         f'  url "{download_url}"',
         f'  sha256 "{sha256}"',
         '  license "Apache-2.0"',
         f'  depends_on "{HOMEBREW_PYTHON_FORMULA}"',
-        "",
-        "  def install",
-        f"    libexec.install {install_clause}",
     ]
-    for command_name in APP_COMMAND_ALIASES:
+    for resource in HOMEBREW_PYTHON_RESOURCES:
         lines.extend(
             [
-                f'    (bin/"{command_name}").write <<~EOS',
-                "      #!/bin/bash",
-                '      cd "#{libexec}"',
-                f'      exec "#{{Formula["{HOMEBREW_PYTHON_FORMULA}"].opt_bin}}/python3" -m ai_proxy_hub "$@"',
-                "    EOS",
+                "",
+                f'  resource "{resource["name"]}" do',
+                f'    url "{resource["url"]}"',
+                f'    sha256 "{resource["sha256"]}"',
+                "  end",
             ]
         )
     lines.extend(
         [
+            "",
+            "  def install",
+            "    virtualenv_install_with_resources",
             "  end",
             "",
             "  test do",

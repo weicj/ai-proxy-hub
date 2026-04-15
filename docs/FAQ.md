@@ -1,7 +1,7 @@
 # AI Proxy Hub FAQ
 
 [![Docs](https://img.shields.io/badge/Docs-FAQ-2563eb)](../README.md)
-[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-aiproxyhub)
+[![Homebrew](https://img.shields.io/badge/Homebrew-available-16a34a)](https://github.com/weicj/homebrew-aiproxyhub)
 ![winget](https://img.shields.io/badge/winget-planned-6b7280)
 ![APT](https://img.shields.io/badge/APT-planned-6b7280)
 
@@ -79,7 +79,7 @@ Yes. The repository includes tooling for:
 
 ## Is the project already fully ready for package-manager publication?
 
-Not yet. The release tooling has been substantially hardened, and the Homebrew tap is already public in preview form, but the broader public package-manager publication path is still being finalized.
+Not yet. Homebrew is already available and is the recommended macOS installation path, but the broader public package-manager publication path is still being finalized.
 
 ## Which license does the project use?
 
