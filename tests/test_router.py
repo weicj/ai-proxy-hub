@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import socket
+import subprocess
 import sys
 import tempfile
 import threading
@@ -54,6 +55,13 @@ SYNC_APT_REPO_SPEC = importlib.util.spec_from_file_location(
 assert SYNC_APT_REPO_SPEC and SYNC_APT_REPO_SPEC.loader
 sync_apt_repo_module = importlib.util.module_from_spec(SYNC_APT_REPO_SPEC)
 SYNC_APT_REPO_SPEC.loader.exec_module(sync_apt_repo_module)
+
+BUILD_DEB_IN_CONTAINER_SPEC = importlib.util.spec_from_file_location(
+    "build_deb_in_container_module", PROJECT_ROOT / "scripts" / "build_deb_in_container.py"
+)
+assert BUILD_DEB_IN_CONTAINER_SPEC and BUILD_DEB_IN_CONTAINER_SPEC.loader
+build_deb_in_container_module = importlib.util.module_from_spec(BUILD_DEB_IN_CONTAINER_SPEC)
+BUILD_DEB_IN_CONTAINER_SPEC.loader.exec_module(build_deb_in_container_module)
 
 import router_server as router_server_module  # noqa: E402
 from router_server import (  # noqa: E402
@@ -2140,6 +2148,86 @@ class PlatformSupportTest(unittest.TestCase):
             apt_readme = (repo_root / "README.md").read_text(encoding="utf-8")
             self.assertIn("trusted=yes", apt_readme)
             self.assertTrue((repo_root / ".gitignore").exists())
+
+    def test_sync_apt_repo_can_request_gpg_signing(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            deb_path = temp_path / "ai-proxy-hub_0.3.1_all.deb"
+            deb_path.write_bytes(b"deb-artifact")
+            control_output = "\n".join(
+                [
+                    "Package: ai-proxy-hub",
+                    "Version: 0.3.1",
+                    "Architecture: all",
+                    "Maintainer: weicj",
+                    "Description: demo",
+                ]
+            )
+            completed = mock.Mock(stdout=control_output)
+            with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
+                with mock.patch.object(sync_apt_repo_module, "sign_release_files") as sign_release_files:
+                    sync_apt_repo_module.sync_apt_repo(
+                        deb_path,
+                        temp_path / "apt-repo",
+                        "stable",
+                        "main",
+                        gpg_key_id="ABC123",
+                        gpg_homedir="/tmp/gnupg",
+                        gpg_binary="gpg2",
+                    )
+            sign_release_files.assert_called_once()
+            args, kwargs = sign_release_files.call_args
+            self.assertEqual(args[1], "stable")
+            self.assertEqual(args[2], "ABC123")
+            self.assertEqual(kwargs["homedir"], "/tmp/gnupg")
+            self.assertEqual(kwargs["gpg_binary"], "gpg2")
+
+    def test_build_gpg_command_supports_clearsign_and_homedir(self):
+        command = sync_apt_repo_module.build_gpg_command(
+            "gpg2",
+            "ABC123",
+            Path("/repo/dists/stable/InRelease"),
+            Path("/repo/dists/stable/Release"),
+            clearsign=True,
+            homedir="/tmp/gnupg",
+        )
+        self.assertEqual(command[0], "gpg2")
+        self.assertIn("--homedir", command)
+        self.assertIn("/tmp/gnupg", command)
+        self.assertIn("--local-user", command)
+        self.assertIn("ABC123", command)
+        self.assertIn("--clearsign", command)
+        self.assertNotIn("--detach-sign", command)
+
+    def test_container_build_command_wraps_build_release_in_linux_image(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            command = build_deb_in_container_module.container_build_command(
+                "docker",
+                "ubuntu:24.04",
+                temp_path / "src",
+                temp_path / "out",
+                version="0.3.1",
+                download_base_url="https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1",
+                homepage="https://github.com/weicj/ai-proxy-hub",
+            )
+        self.assertEqual(command[:3], ["docker", "run", "--rm"])
+        self.assertIn("ubuntu:24.04", command)
+        joined = " ".join(command)
+        self.assertIn("apt-get install -y python3 dpkg-dev ca-certificates", joined)
+        self.assertIn("python3 /work/scripts/build_release.py --output-dir /out --version 0.3.1", joined)
+        self.assertIn("--download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1", joined)
+        self.assertIn("--homepage https://github.com/weicj/ai-proxy-hub", joined)
+
+    def test_ensure_container_runtime_available_reports_unavailable_daemon(self):
+        with mock.patch.object(
+            build_deb_in_container_module.subprocess,
+            "run",
+            side_effect=subprocess.CalledProcessError(1, ["docker", "info"]),
+        ):
+            with self.assertRaises(SystemExit) as exc:
+                build_deb_in_container_module.ensure_container_runtime_available("docker")
+        self.assertIn("Start Docker Desktop / the Docker daemon first", str(exc.exception))
 
     def test_homebrew_formula_uses_dynamic_python_and_both_launchers(self):
         formula = build_release_module.homebrew_formula(

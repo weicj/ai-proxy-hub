@@ -570,6 +570,29 @@ python3 scripts/sync_apt_repo.py \
   --component main
 ```
 
+### 在 macOS 或其他非 Debian 主机上，通过 Linux 容器构建 `.deb`
+
+先确认 Docker Desktop 或其他兼容的 Docker daemon 已经启动。
+
+```bash
+python3 scripts/build_deb_in_container.py \
+  --version 0.3.1 \
+  --output-dir dist-container \
+  --download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1 \
+  --homepage https://github.com/weicj/ai-proxy-hub
+```
+
+### 在 GPG 可用时，为暂存的 APT 仓库加签
+
+```bash
+python3 scripts/sync_apt_repo.py \
+  --deb dist-container/ai-proxy-hub_0.3.1_all.deb \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
+  --distribution stable \
+  --component main \
+  --gpg-key-id YOUR_KEY_ID
+```
+
 ### 执行远程 Linux 冒烟验证
 
 ```bash

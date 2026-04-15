@@ -21,6 +21,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", default=str(DEFAULT_REPO_ROOT), help="APT repository root")
     parser.add_argument("--distribution", default=DEFAULT_DISTRIBUTION, help="APT distribution, for example stable")
     parser.add_argument("--component", default=DEFAULT_COMPONENT, help="APT component, for example main")
+    parser.add_argument("--gpg-key-id", help="Optional GPG key ID used to sign Release into Release.gpg and InRelease")
+    parser.add_argument("--gpg-homedir", help="Optional GPG home directory used when signing")
+    parser.add_argument("--gpg-binary", default="gpg", help="GPG executable used when signing")
     return parser.parse_args()
 
 
@@ -139,13 +142,64 @@ def apt_readme(distribution: str, component: str) -> str:
             "sudo apt install ai-proxy-hub",
             "```",
             "",
+            "For public distribution you should also generate `Release.gpg` and `InRelease` with a trusted signing key.",
+            "",
             "Do not advertise a public `apt install` command until this repository is hosted and signed.",
             "",
         ]
     )
 
 
-def sync_apt_repo(deb_path: Path, repo_root: Path, distribution: str, component: str) -> Path:
+def build_gpg_command(
+    gpg_binary: str,
+    key_id: str,
+    output_path: Path,
+    input_path: Path,
+    *,
+    clearsign: bool = False,
+    homedir: str | None = None,
+) -> list[str]:
+    command = [gpg_binary]
+    if homedir:
+        command.extend(["--homedir", homedir])
+    command.extend(["--batch", "--yes", "--local-user", key_id, "--output", str(output_path)])
+    command.append("--clearsign" if clearsign else "--detach-sign")
+    command.append(str(input_path))
+    return command
+
+
+def sign_release_files(
+    repo_root: Path,
+    distribution: str,
+    key_id: str,
+    *,
+    gpg_binary: str = "gpg",
+    homedir: str | None = None,
+) -> tuple[Path, Path]:
+    release_path = repo_root / "dists" / distribution / "Release"
+    release_gpg_path = release_path.with_name("Release.gpg")
+    inrelease_path = release_path.with_name("InRelease")
+    subprocess.run(
+        build_gpg_command(gpg_binary, key_id, release_gpg_path, release_path, homedir=homedir),
+        check=True,
+    )
+    subprocess.run(
+        build_gpg_command(gpg_binary, key_id, inrelease_path, release_path, clearsign=True, homedir=homedir),
+        check=True,
+    )
+    return release_gpg_path, inrelease_path
+
+
+def sync_apt_repo(
+    deb_path: Path,
+    repo_root: Path,
+    distribution: str,
+    component: str,
+    *,
+    gpg_key_id: str | None = None,
+    gpg_homedir: str | None = None,
+    gpg_binary: str = "gpg",
+) -> Path:
     deb_path = deb_path.resolve()
     repo_root = repo_root.resolve()
     if not deb_path.exists():
@@ -181,6 +235,8 @@ def sync_apt_repo(deb_path: Path, repo_root: Path, distribution: str, component:
         ),
         encoding="utf-8",
     )
+    if gpg_key_id:
+        sign_release_files(repo_root, distribution, gpg_key_id, gpg_binary=gpg_binary, homedir=gpg_homedir)
 
     readme_path = repo_root / "README.md"
     if not readme_path.exists():
@@ -198,6 +254,9 @@ def main() -> None:
         Path(args.repo_root),
         str(args.distribution),
         str(args.component),
+        gpg_key_id=str(args.gpg_key_id) if args.gpg_key_id else None,
+        gpg_homedir=str(args.gpg_homedir) if args.gpg_homedir else None,
+        gpg_binary=str(args.gpg_binary),
     )
     print(repo_root)
 

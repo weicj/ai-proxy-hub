@@ -110,7 +110,7 @@ jobs:
       - name: Run router subscription tests
         run: python scripts/run_named_unittest.py --tests-dir tests --name test_router.SubscriptionRulesTest
       - name: Verify packaging metadata
-        run: python -m py_compile aiproxyhub.py start.py router_server.py tests/test_router.py tests/test_release_preflight.py scripts/build_release.py scripts/run_named_unittest.py scripts/verify_release_artifacts.py scripts/release_preflight.py scripts/sync_homebrew_tap.py scripts/sync_winget_manifest.py scripts/sync_apt_repo.py
+        run: python -m py_compile aiproxyhub.py start.py router_server.py tests/test_router.py tests/test_release_preflight.py scripts/build_release.py scripts/build_deb_in_container.py scripts/run_named_unittest.py scripts/verify_release_artifacts.py scripts/release_preflight.py scripts/sync_homebrew_tap.py scripts/sync_winget_manifest.py scripts/sync_apt_repo.py
       - name: Release preflight
         run: python scripts/release_preflight.py --version 0.3.1 --skip-tests --skip-build
       - name: Build and verify release artifacts

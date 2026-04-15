@@ -72,6 +72,29 @@ python3 scripts/sync_apt_repo.py \
   --component main
 ```
 
+If you are on macOS or another non-Debian host, you can build the `.deb` in a Linux container first:
+
+```bash
+python3 scripts/build_deb_in_container.py \
+  --version 0.3.1 \
+  --output-dir dist-container \
+  --download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1 \
+  --homepage https://github.com/weicj/ai-proxy-hub
+```
+
+This requires a running Docker daemon on the local machine.
+
+If you are preparing a public APT repository, add signing when GPG is available:
+
+```bash
+python3 scripts/sync_apt_repo.py \
+  --deb dist-container/ai-proxy-hub_0.3.1_all.deb \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
+  --distribution stable \
+  --component main \
+  --gpg-key-id YOUR_KEY_ID
+```
+
 7. Run external smoke tests.
 
 - Linux: use [run_remote_linux_smoke.py](/Users/max/ai-proxy-hub/scripts/run_remote_linux_smoke.py) with `--identity-file` and optional repeated `--ssh-option` values when the remote host needs an explicit SSH key or custom SSH transport settings

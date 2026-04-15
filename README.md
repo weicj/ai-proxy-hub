@@ -570,6 +570,29 @@ python3 scripts/sync_apt_repo.py \
   --component main
 ```
 
+### Build a `.deb` in a Linux container from macOS or another non-Debian host
+
+Make sure Docker Desktop or another compatible Docker daemon is already running.
+
+```bash
+python3 scripts/build_deb_in_container.py \
+  --version 0.3.1 \
+  --output-dir dist-container \
+  --download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1 \
+  --homepage https://github.com/weicj/ai-proxy-hub
+```
+
+### Sign the staged APT repository when GPG is available
+
+```bash
+python3 scripts/sync_apt_repo.py \
+  --deb dist-container/ai-proxy-hub_0.3.1_all.deb \
+  --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
+  --distribution stable \
+  --component main \
+  --gpg-key-id YOUR_KEY_ID
+```
+
 ### Run a remote Linux smoke test
 
 ```bash

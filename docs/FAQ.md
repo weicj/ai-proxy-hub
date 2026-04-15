@@ -77,6 +77,7 @@ Yes. The repository includes tooling for:
 - optional `.deb` generation
 - generated metadata for Homebrew and winget-oriented workflows
 - local APT repository staging output from a built `.deb`
+- optional APT signing flow when GPG is available
 
 ## Is the project already fully ready for package-manager publication?
 
