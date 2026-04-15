@@ -2,9 +2,17 @@
 
 English | [简体中文](README.zh-CN.md)
 
-AI Proxy Hub is a cross-platform local gateway for AI clients and upstream APIs. It unifies multiple upstream endpoints behind one local control plane, adds protocol-aware routing and failover, and provides both a Web dashboard and an interactive CLI.
+[![Release](https://img.shields.io/github/v/release/weicj/ai-proxy-hub?display_name=tag&color=2563eb)](https://github.com/weicj/ai-proxy-hub/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/weicj/ai-proxy-hub/ci.yml?branch=main&label=CI&color=16a34a)](https://github.com/weicj/ai-proxy-hub/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB)
+![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-0f766e)
+![Protocols](https://img.shields.io/badge/Protocols-Codex%20%7C%20Claude%20%7C%20Gemini-7c3aed)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+![winget](https://img.shields.io/badge/winget-planned-6b7280)
+![APT](https://img.shields.io/badge/APT-planned-6b7280)
+[![License](https://img.shields.io/badge/License-Apache%202.0-d97706)](LICENSE)
 
-`Python 3.9+` `macOS` `Linux` `Windows` `Apache-2.0`
+AI Proxy Hub is a cross-platform local gateway for AI clients and upstream APIs. It unifies multiple upstream endpoints behind one local control plane, adds protocol-aware routing and failover, and provides both a Web dashboard and an interactive CLI.
 
 ## Highlights
 
@@ -288,16 +296,16 @@ or:
 sudo dpkg -i ai-proxy-hub_<version>_all.deb
 ```
 
-### Package-manager commands
+### Package-manager channels
 
-Homebrew is now available:
+Homebrew tap is published in preview. If you want the lowest-risk install path right now, prefer source checkout or the GitHub Release archive first.
 
 ```bash
 brew tap weicj/tap
 brew install ai-proxy-hub
 ```
 
-The following publication flows are still being prepared:
+The following public package-manager lanes are still being prepared:
 
 ```bash
 winget install AIProxyHub.AIProxyHub

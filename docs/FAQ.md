@@ -1,5 +1,10 @@
 # AI Proxy Hub FAQ
 
+[![Docs](https://img.shields.io/badge/Docs-FAQ-2563eb)](../README.md)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+![winget](https://img.shields.io/badge/winget-planned-6b7280)
+![APT](https://img.shields.io/badge/APT-planned-6b7280)
+
 ## What is AI Proxy Hub?
 
 AI Proxy Hub is a local control layer for AI clients and upstream APIs. It provides one managed entrypoint, multiple routing strategies, subscription-aware availability handling, local API key management, and both Web and CLI control surfaces.
@@ -74,7 +79,7 @@ Yes. The repository includes tooling for:
 
 ## Is the project already fully ready for package-manager publication?
 
-Not yet. The release tooling has been substantially hardened, but the full public package-manager publication path is still being finalized.
+Not yet. The release tooling has been substantially hardened, and the Homebrew tap is already public in preview form, but the broader public package-manager publication path is still being finalized.
 
 ## Which license does the project use?
 

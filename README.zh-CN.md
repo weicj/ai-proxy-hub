@@ -2,9 +2,17 @@
 
 [English](README.md) | 简体中文
 
-AI Proxy Hub 是一个跨平台的本地 AI 网关，用于把多个上游 API 统一到一个本地控制平面之下。它提供协议感知路由、故障切换、上游订阅管理、本地 API Key 管理，以及 Web 控制台和交互式 CLI。
+[![Release](https://img.shields.io/github/v/release/weicj/ai-proxy-hub?display_name=tag&color=2563eb)](https://github.com/weicj/ai-proxy-hub/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/weicj/ai-proxy-hub/ci.yml?branch=main&label=CI&color=16a34a)](https://github.com/weicj/ai-proxy-hub/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB)
+![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux%20%7C%20Windows-0f766e)
+![Protocols](https://img.shields.io/badge/Protocols-Codex%20%7C%20Claude%20%7C%20Gemini-7c3aed)
+[![Homebrew](https://img.shields.io/badge/Homebrew-preview-f59e0b)](https://github.com/weicj/homebrew-tap)
+![winget](https://img.shields.io/badge/winget-planned-6b7280)
+![APT](https://img.shields.io/badge/APT-planned-6b7280)
+[![License](https://img.shields.io/badge/License-Apache%202.0-d97706)](LICENSE)
 
-`Python 3.9+` `macOS` `Linux` `Windows` `Apache-2.0`
+AI Proxy Hub 是一个跨平台的本地 AI 网关，用于把多个上游 API 统一到一个本地控制平面之下。它提供协议感知路由、故障切换、上游订阅管理、本地 API Key 管理，以及 Web 控制台和交互式 CLI。
 
 ## 项目亮点
 
@@ -288,16 +296,16 @@ sudo apt install ./ai-proxy-hub_<version>_all.deb
 sudo dpkg -i ai-proxy-hub_<version>_all.deb
 ```
 
-### 包管理器安装命令
+### 包管理器渠道
 
-Homebrew 现在已经可用：
+Homebrew tap 已经公开，但目前仍属于预览阶段。如果你想走最稳妥的安装路径，当前仍建议优先使用源码目录或 GitHub Release 压缩包。
 
 ```bash
 brew tap weicj/tap
 brew install ai-proxy-hub
 ```
 
-下面这些分发方式仍在准备中：
+下面这些公开包管理器链路仍在准备中：
 
 ```bash
 winget install AIProxyHub.AIProxyHub
