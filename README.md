@@ -288,12 +288,18 @@ or:
 sudo dpkg -i ai-proxy-hub_<version>_all.deb
 ```
 
-### Planned package-manager commands
+### Package-manager commands
 
-These publication flows are being prepared, but should not be documented as live until the public repositories are actually available:
+Homebrew is now available:
 
 ```bash
-brew install weicj/tap/ai-proxy-hub
+brew tap weicj/tap
+brew install ai-proxy-hub
+```
+
+The following publication flows are still being prepared:
+
+```bash
 winget install AIProxyHub.AIProxyHub
 sudo apt install ai-proxy-hub
 ```
@@ -584,7 +590,6 @@ See [docs/FAQ.md](docs/FAQ.md).
 ## Roadmap
 
 - PyPI publication
-- publish `weicj/homebrew-tap` and enable `brew install weicj/tap/ai-proxy-hub`
 - APT-oriented release flow
 - winget submission workflow
 - broader language packs on top of the current i18n structure

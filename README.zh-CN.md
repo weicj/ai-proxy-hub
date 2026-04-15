@@ -288,12 +288,18 @@ sudo apt install ./ai-proxy-hub_<version>_all.deb
 sudo dpkg -i ai-proxy-hub_<version>_all.deb
 ```
 
-### 计划中的包管理器安装命令
+### 包管理器安装命令
 
-下面这些分发方式正在准备中，在对应公共仓库真正上线之前，不应写成“已经可用”：
+Homebrew 现在已经可用：
 
 ```bash
-brew install weicj/tap/ai-proxy-hub
+brew tap weicj/tap
+brew install ai-proxy-hub
+```
+
+下面这些分发方式仍在准备中：
+
+```bash
 winget install AIProxyHub.AIProxyHub
 sudo apt install ai-proxy-hub
 ```
@@ -584,7 +590,6 @@ python3 scripts/run_remote_linux_smoke.py \
 ## 路线图
 
 - 发布到 PyPI
-- 发布 `weicj/homebrew-tap`，让 `brew install weicj/tap/ai-proxy-hub` 可直接使用
 - 面向 APT 的发布流程
 - winget 提交流程
 - 在现有 i18n 结构上扩展更多语言包
