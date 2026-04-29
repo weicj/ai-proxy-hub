@@ -4,12 +4,13 @@ import json
 import socket
 import subprocess
 import sys
+import tarfile
 import tempfile
 import threading
 import time
 import unittest
 from contextlib import ExitStack
-from datetime import datetime
+from datetime import datetime, timezone
 from http.client import HTTPConnection
 import urllib.error
 import urllib.request
@@ -62,6 +63,13 @@ BUILD_DEB_IN_CONTAINER_SPEC = importlib.util.spec_from_file_location(
 assert BUILD_DEB_IN_CONTAINER_SPEC and BUILD_DEB_IN_CONTAINER_SPEC.loader
 build_deb_in_container_module = importlib.util.module_from_spec(BUILD_DEB_IN_CONTAINER_SPEC)
 BUILD_DEB_IN_CONTAINER_SPEC.loader.exec_module(build_deb_in_container_module)
+
+BOOTSTRAP_APT_SIGNING_SPEC = importlib.util.spec_from_file_location(
+    "bootstrap_apt_signing_module", PROJECT_ROOT / "scripts" / "bootstrap_apt_signing.py"
+)
+assert BOOTSTRAP_APT_SIGNING_SPEC and BOOTSTRAP_APT_SIGNING_SPEC.loader
+bootstrap_apt_signing_module = importlib.util.module_from_spec(BOOTSTRAP_APT_SIGNING_SPEC)
+BOOTSTRAP_APT_SIGNING_SPEC.loader.exec_module(bootstrap_apt_signing_module)
 
 import router_server as router_server_module  # noqa: E402
 from router_server import (  # noqa: E402
@@ -1175,6 +1183,51 @@ class RouterServerTest(unittest.TestCase):
         self.assertEqual(payload["result"]["models"], ["gpt-a"])
         self.assertEqual(payload["result"]["models_count"], 1)
 
+    def test_status_marks_cooling_upstream_effectively_disabled_until_reactivated(self):
+        upstream_id = self.proxy.store.get_config()["upstreams"][0]["id"]
+        self.proxy.store.record_failure(upstream_id, status=None, error="timed out", cooldown=True)
+
+        status, payload = make_request(f"{self.proxy_base}/api/status")
+        self.assertEqual(status, 200)
+        upstream_status = next(item for item in payload["upstreams"] if item["id"] == upstream_id)
+        self.assertTrue(upstream_status["enabled"])
+        self.assertFalse(upstream_status["effective_enabled"])
+        self.assertTrue(upstream_status["temporarily_disabled"])
+        self.assertTrue(upstream_status["cooldown_active"])
+        self.assertGreater(upstream_status["stats"]["cooldown_remaining_sec"], 0)
+
+        status, payload = make_request(
+            f"{self.proxy_base}/api/upstream/control",
+            method="POST",
+            data={"id": upstream_id, "action": "reactivate"},
+        )
+        self.assertEqual(status, 200)
+        upstream_status = next(item for item in payload["status"]["upstreams"] if item["id"] == upstream_id)
+        self.assertTrue(upstream_status["enabled"])
+        self.assertTrue(upstream_status["effective_enabled"])
+        self.assertFalse(upstream_status["temporarily_disabled"])
+        self.assertFalse(upstream_status["cooldown_active"])
+        self.assertEqual(upstream_status["stats"]["cooldown_remaining_sec"], 0)
+
+    def test_successful_probe_clears_active_cooldown(self):
+        upstream_id = self.proxy.store.get_config()["upstreams"][0]["id"]
+        self.proxy.store.record_failure(upstream_id, status=None, error="timed out", cooldown=True)
+
+        status, payload = make_request(
+            f"{self.proxy_base}/api/test",
+            method="POST",
+            data={"id": upstream_id},
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(payload["result"]["status"], 200)
+
+        status, payload = make_request(f"{self.proxy_base}/api/status")
+        self.assertEqual(status, 200)
+        upstream_status = next(item for item in payload["upstreams"] if item["id"] == upstream_id)
+        self.assertTrue(upstream_status["effective_enabled"])
+        self.assertFalse(upstream_status["temporarily_disabled"])
+        self.assertEqual(upstream_status["stats"]["cooldown_remaining_sec"], 0)
+
     def test_legacy_config_is_migrated_to_upstreams(self):
         config = normalize_config({"url": "https://demo.example/v1", "token": "sk-demo", "model": "gpt-4.1-mini"})
         self.assertEqual(config["upstreams"][0]["base_url"], "https://demo.example/v1")
@@ -2124,13 +2177,14 @@ class PlatformSupportTest(unittest.TestCase):
                 ]
             )
             completed = mock.Mock(stdout=control_output)
-            with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
-                repo_root = sync_apt_repo_module.sync_apt_repo(
-                    deb_path,
-                    temp_path / "apt-repo",
-                    "stable",
-                    "main",
-                )
+            with mock.patch.object(sync_apt_repo_module.shutil, "which", return_value="/usr/bin/dpkg-deb"):
+                with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
+                    repo_root = sync_apt_repo_module.sync_apt_repo(
+                        deb_path,
+                        temp_path / "apt-repo",
+                        "stable",
+                        "main",
+                    )
 
             copied_deb = repo_root / "pool" / "main" / "a" / "ai-proxy-hub" / deb_path.name
             self.assertTrue(copied_deb.exists())
@@ -2147,6 +2201,7 @@ class PlatformSupportTest(unittest.TestCase):
             self.assertIn("dists/stable/main/binary-all/Packages.gz", release_text)
             apt_readme = (repo_root / "README.md").read_text(encoding="utf-8")
             self.assertIn("trusted=yes", apt_readme)
+            self.assertIn("signed-by=/usr/share/keyrings/ai-proxy-hub-archive-keyring.gpg", apt_readme)
             self.assertTrue((repo_root / ".gitignore").exists())
 
     def test_sync_apt_repo_can_request_gpg_signing(self):
@@ -2164,23 +2219,223 @@ class PlatformSupportTest(unittest.TestCase):
                 ]
             )
             completed = mock.Mock(stdout=control_output)
-            with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
-                with mock.patch.object(sync_apt_repo_module, "sign_release_files") as sign_release_files:
-                    sync_apt_repo_module.sync_apt_repo(
-                        deb_path,
-                        temp_path / "apt-repo",
-                        "stable",
-                        "main",
-                        gpg_key_id="ABC123",
-                        gpg_homedir="/tmp/gnupg",
-                        gpg_binary="gpg2",
-                    )
+            with mock.patch.object(sync_apt_repo_module.shutil, "which", return_value="/usr/bin/dpkg-deb"):
+                with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
+                    with mock.patch.object(sync_apt_repo_module, "sign_release_files") as sign_release_files:
+                        sync_apt_repo_module.sync_apt_repo(
+                            deb_path,
+                            temp_path / "apt-repo",
+                            "stable",
+                            "main",
+                            gpg_key_id="ABC123",
+                            gpg_homedir="/tmp/gnupg",
+                            gpg_binary="gpg2",
+                        )
             sign_release_files.assert_called_once()
             args, kwargs = sign_release_files.call_args
             self.assertEqual(args[1], "stable")
             self.assertEqual(args[2], "ABC123")
             self.assertEqual(kwargs["homedir"], "/tmp/gnupg")
             self.assertEqual(kwargs["gpg_binary"], "gpg2")
+
+    def test_sync_apt_repo_passes_gpg_passphrase_to_signing(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            deb_path = temp_path / "ai-proxy-hub_0.3.1_all.deb"
+            deb_path.write_bytes(b"deb-artifact")
+            control_output = "\n".join(
+                [
+                    "Package: ai-proxy-hub",
+                    "Version: 0.3.1",
+                    "Architecture: all",
+                    "Maintainer: weicj",
+                    "Description: demo",
+                ]
+            )
+            completed = mock.Mock(stdout=control_output)
+            with mock.patch.object(sync_apt_repo_module.shutil, "which", return_value="/usr/bin/dpkg-deb"):
+                with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
+                    with mock.patch.object(sync_apt_repo_module, "sign_release_files") as sign_release_files:
+                        sync_apt_repo_module.sync_apt_repo(
+                            deb_path,
+                            temp_path / "apt-repo",
+                            "stable",
+                            "main",
+                            gpg_key_id="ABC123",
+                            gpg_homedir="/tmp/gnupg",
+                            gpg_binary="gpg2",
+                            gpg_passphrase="secret-passphrase",
+                        )
+            sign_release_files.assert_called_once()
+            _, kwargs = sign_release_files.call_args
+            self.assertEqual(kwargs["passphrase"], "secret-passphrase")
+
+    def test_read_deb_control_fields_falls_back_without_dpkg_deb(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            deb_path = temp_path / "ai-proxy-hub_0.3.1_all.deb"
+            control_text = "\n".join(
+                [
+                    "Package: ai-proxy-hub",
+                    "Version: 0.3.1",
+                    "Architecture: all",
+                    "Maintainer: weicj",
+                    "Description: Cross-platform local AI proxy hub",
+                    " rich CLI and Web dashboard",
+                    "",
+                ]
+            ).encode("utf-8")
+
+            control_tar_buffer = io.BytesIO()
+            with tarfile.open(fileobj=control_tar_buffer, mode="w:gz") as control_archive:
+                control_info = tarfile.TarInfo(name="control")
+                control_info.size = len(control_text)
+                control_archive.addfile(control_info, io.BytesIO(control_text))
+
+            def ar_member(name: str, payload: bytes) -> bytes:
+                encoded_name = f"{name}/".ljust(16).encode("ascii")
+                header = (
+                    encoded_name
+                    + b"0".ljust(12)
+                    + b"0".ljust(6)
+                    + b"0".ljust(6)
+                    + b"100644".ljust(8)
+                    + str(len(payload)).encode("ascii").ljust(10)
+                    + b"`\n"
+                )
+                pad = b"\n" if len(payload) % 2 else b""
+                return header + payload + pad
+
+            deb_path.write_bytes(
+                b"!<arch>\n"
+                + ar_member("debian-binary", b"2.0\n")
+                + ar_member("control.tar.gz", control_tar_buffer.getvalue())
+                + ar_member("data.tar.gz", b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+            )
+
+            with mock.patch.object(sync_apt_repo_module.shutil, "which", return_value=None):
+                fields = sync_apt_repo_module.read_deb_control_fields(deb_path)
+
+            self.assertEqual(fields["Package"], "ai-proxy-hub")
+            self.assertEqual(fields["Version"], "0.3.1")
+            self.assertEqual(fields["Architecture"], "all")
+            self.assertIn("rich CLI and Web dashboard", fields["Description"])
+
+    def test_sync_apt_repo_can_export_public_key_files_when_signing_enabled(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            deb_path = temp_path / "ai-proxy-hub_0.3.1_all.deb"
+            deb_path.write_bytes(b"deb-artifact")
+            control_output = "\n".join(
+                [
+                    "Package: ai-proxy-hub",
+                    "Version: 0.3.1",
+                    "Architecture: all",
+                    "Maintainer: weicj",
+                    "Description: demo",
+                ]
+            )
+            completed = mock.Mock(stdout=control_output)
+            with mock.patch.object(sync_apt_repo_module.shutil, "which", return_value="/usr/bin/dpkg-deb"):
+                with mock.patch.object(sync_apt_repo_module.subprocess, "run", return_value=completed):
+                    with mock.patch.object(sync_apt_repo_module, "sign_release_files") as sign_release_files:
+                        with mock.patch.object(sync_apt_repo_module, "export_public_key_files") as export_public_key_files:
+                            sync_apt_repo_module.sync_apt_repo(
+                                deb_path,
+                                temp_path / "apt-repo",
+                                "stable",
+                                "main",
+                                gpg_key_id="ABC123",
+                                gpg_homedir="/tmp/gnupg",
+                                gpg_binary="gpg2",
+                                export_public_key=True,
+                                public_key_name="repo-key",
+                            )
+            sign_release_files.assert_called_once()
+            export_public_key_files.assert_called_once()
+            args, kwargs = export_public_key_files.call_args
+            self.assertEqual(args[0], "ABC123")
+            self.assertTrue(str(args[1]).endswith("apt-repo/public"))
+            self.assertEqual(kwargs["key_name"], "repo-key")
+            self.assertEqual(kwargs["gpg_binary"], "gpg2")
+            self.assertEqual(kwargs["homedir"], "/tmp/gnupg")
+
+    def test_export_public_key_files_writes_armored_and_binary_keyring(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            ascii_completed = mock.Mock(stdout=b"ASCII KEY\n")
+            export_completed = mock.Mock(stdout=b"BINARY KEY")
+            dearmor_completed = mock.Mock(stdout=b"DEARMORED KEY")
+            with mock.patch.object(
+                sync_apt_repo_module.subprocess,
+                "run",
+                side_effect=[ascii_completed, export_completed, dearmor_completed],
+            ) as run_mock:
+                ascii_path, binary_path = sync_apt_repo_module.export_public_key_files(
+                    "ABC123",
+                    temp_path,
+                    key_name="repo-key",
+                    gpg_binary="gpg2",
+                    homedir="/tmp/gnupg",
+                )
+            self.assertEqual(ascii_path.read_text(encoding="utf-8"), "ASCII KEY\n")
+            self.assertEqual(binary_path.read_bytes(), b"DEARMORED KEY")
+            self.assertEqual(run_mock.call_count, 3)
+
+    def test_bootstrap_apt_signing_build_batch_config_supports_no_protection(self):
+        config = bootstrap_apt_signing_module.build_batch_config(
+            name_real="weicj",
+            name_email="weicj520@gmail.com",
+            name_comment="AI Proxy Hub APT Repository",
+            expire_date="2y",
+            no_protection=True,
+        )
+        self.assertIn("Key-Type: RSA", config)
+        self.assertIn("Key-Length: 4096", config)
+        self.assertIn("Key-Usage: sign", config)
+        self.assertIn("Name-Real: weicj", config)
+        self.assertIn("Name-Comment: AI Proxy Hub APT Repository", config)
+        self.assertIn("Name-Email: weicj520@gmail.com", config)
+        self.assertIn("Expire-Date: 2y", config)
+        self.assertIn("%no-protection", config)
+
+    def test_bootstrap_apt_signing_extracts_primary_secret_key_metadata(self):
+        colon_output = "\n".join(
+            [
+                "sec:u:4096:1:74DB9A2470654289:1776322728:1839394728::u:::scSC:::+:::23::0:",
+                "fpr:::::::::38486A58F022430CF83010B274DB9A2470654289:",
+                "uid:u::::1776322728::ABCDEF::weicj (AI Proxy Hub APT Repository) <weicj520@gmail.com>::::::::::0:",
+            ]
+        )
+        metadata = bootstrap_apt_signing_module.extract_primary_secret_key(colon_output)
+        self.assertEqual(metadata["key_id"], "74DB9A2470654289")
+        self.assertEqual(metadata["fingerprint"], "38486A58F022430CF83010B274DB9A2470654289")
+        self.assertIn("AI Proxy Hub APT Repository", metadata["uid"])
+
+    def test_bootstrap_apt_signing_export_public_key_files_writes_expected_artifacts(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir)
+            armored = mock.Mock(stdout="ASCII KEY\n")
+            binary_export = mock.Mock(stdout=b"BINARY KEY")
+            dearmored = mock.Mock(stdout=b"DEARMORED KEY")
+            with mock.patch.object(
+                bootstrap_apt_signing_module,
+                "run_gpg",
+                side_effect=[armored],
+            ):
+                with mock.patch.object(
+                    bootstrap_apt_signing_module.subprocess,
+                    "run",
+                    side_effect=[binary_export, dearmored],
+                ):
+                    ascii_path, binary_path = bootstrap_apt_signing_module.export_public_key_files(
+                        "gpg",
+                        "ABC123",
+                        temp_path,
+                        key_name="repo-key",
+                    )
+            self.assertEqual(ascii_path.read_text(encoding="utf-8"), "ASCII KEY\n")
+            self.assertEqual(binary_path.read_bytes(), b"DEARMORED KEY")
 
     def test_build_gpg_command_supports_clearsign_and_homedir(self):
         command = sync_apt_repo_module.build_gpg_command(
@@ -2199,6 +2454,31 @@ class PlatformSupportTest(unittest.TestCase):
         self.assertIn("--clearsign", command)
         self.assertNotIn("--detach-sign", command)
 
+    def test_build_gpg_command_supports_loopback_passphrase(self):
+        command = sync_apt_repo_module.build_gpg_command(
+            "gpg2",
+            "ABC123",
+            Path("/repo/dists/stable/Release.gpg"),
+            Path("/repo/dists/stable/Release"),
+            passphrase="secret-passphrase",
+        )
+        self.assertIn("--pinentry-mode", command)
+        self.assertIn("loopback", command)
+        self.assertIn("--passphrase-fd", command)
+        self.assertIn("0", command)
+
+    def test_resolve_gpg_passphrase_from_environment(self):
+        with mock.patch.dict(sync_apt_repo_module.os.environ, {"APT_GPG_PASSPHRASE": "secret-passphrase"}, clear=False):
+            value = sync_apt_repo_module.resolve_gpg_passphrase(env_name="APT_GPG_PASSPHRASE")
+        self.assertEqual(value, "secret-passphrase")
+
+    def test_resolve_gpg_passphrase_from_file(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            temp_path = Path(tempdir) / "passphrase.txt"
+            temp_path.write_text("secret-passphrase\n", encoding="utf-8")
+            value = sync_apt_repo_module.resolve_gpg_passphrase(file_path=str(temp_path))
+        self.assertEqual(value, "secret-passphrase")
+
     def test_container_build_command_wraps_build_release_in_linux_image(self):
         with tempfile.TemporaryDirectory() as tempdir:
             temp_path = Path(tempdir)
@@ -2214,7 +2494,8 @@ class PlatformSupportTest(unittest.TestCase):
         self.assertEqual(command[:3], ["docker", "run", "--rm"])
         self.assertIn("ubuntu:24.04", command)
         joined = " ".join(command)
-        self.assertIn("apt-get install -y python3 dpkg-dev ca-certificates", joined)
+        self.assertIn("if ! command -v python3 >/dev/null 2>&1 || ! command -v dpkg-deb >/dev/null 2>&1; then", joined)
+        self.assertIn("apt-get install -y --no-install-recommends -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 python3 dpkg ca-certificates", joined)
         self.assertIn("python3 /work/scripts/build_release.py --output-dir /out --version 0.3.1", joined)
         self.assertIn("--download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1", joined)
         self.assertIn("--homepage https://github.com/weicj/ai-proxy-hub", joined)
@@ -2737,6 +3018,57 @@ class SubscriptionRulesTest(unittest.TestCase):
         self.assertEqual(summary["subscriptions"][0]["state"], "ready")
         self.assertFalse(summary["subscriptions"][0]["exhausted"])
 
+    def test_cooldown_duration_change_recalculates_existing_cooldown_window(self):
+        store = self.create_store(
+            [
+                {
+                    "id": "sub-unlimited",
+                    "name": "Unlimited",
+                    "kind": "unlimited",
+                },
+            ],
+            cooldown_seconds=300,
+        )
+        failure_ts = time.time() - 120
+        with store.lock:
+            stat = store._ensure_upstream_stat_locked("upstream-subscriptions")
+            stat["last_attempt_at"] = datetime.fromtimestamp(failure_ts, timezone.utc).isoformat()
+            stat["cooldown_until"] = failure_ts + 300
+
+        config = store.get_config()
+        config["cooldown_seconds"] = 30
+        store.save_config(config)
+
+        with store.lock:
+            stat = store._ensure_upstream_stat_locked("upstream-subscriptions")
+            self.assertEqual(stat["cooldown_until"], 0.0)
+
+    def test_cooldown_duration_change_keeps_remaining_time_from_last_failure(self):
+        store = self.create_store(
+            [
+                {
+                    "id": "sub-unlimited",
+                    "name": "Unlimited",
+                    "kind": "unlimited",
+                },
+            ],
+            cooldown_seconds=300,
+        )
+        failure_ts = time.time() - 10
+        with store.lock:
+            stat = store._ensure_upstream_stat_locked("upstream-subscriptions")
+            stat["last_attempt_at"] = datetime.fromtimestamp(failure_ts, timezone.utc).isoformat()
+            stat["cooldown_until"] = failure_ts + 300
+
+        config = store.get_config()
+        config["cooldown_seconds"] = 30
+        store.save_config(config)
+
+        with store.lock:
+            stat = store._ensure_upstream_stat_locked("upstream-subscriptions")
+            self.assertGreater(stat["cooldown_until"], time.time())
+            self.assertLessEqual(stat["cooldown_until"], failure_ts + 31)
+
     def test_success_clears_temporary_exhausted_periodic_subscription(self):
         store = self.create_store(
             [
@@ -2772,6 +3104,45 @@ class SubscriptionRulesTest(unittest.TestCase):
         self.assertTrue(recovered_summary["available"])
         self.assertEqual(recovered_summary["current_subscription_id"], "sub-periodic")
         self.assertEqual(recovered_summary["subscriptions"][0]["state"], "ready")
+
+    def test_probe_success_clears_temporary_exhausted_periodic_subscription(self):
+        store = self.create_store(
+            [
+                {
+                    "id": "sub-periodic",
+                    "name": "Split Reset",
+                    "kind": "periodic",
+                    "reset_times": ["09:00", "21:00"],
+                    "failure_mode": "consecutive_failures",
+                    "failure_threshold": 1,
+                },
+            ],
+            cooldown_seconds=300,
+        )
+
+        exhausted_at = local_datetime(2026, 4, 8, 10, 30, 0)
+        with ExitStack() as stack:
+            stack.enter_context(mock.patch("ai_proxy_hub.store.current_local_datetime", return_value=exhausted_at))
+            stack.enter_context(mock.patch("ai_proxy_hub.subscriptions.current_local_datetime", return_value=exhausted_at))
+            store.record_failure("upstream-subscriptions", status=429, error="insufficient_quota", cooldown=True)
+
+        waiting_summary = self.summary_at(store, local_datetime(2026, 4, 8, 15, 0, 0))
+        self.assertEqual(waiting_summary["state"], "temporary_exhausted")
+        with store.lock:
+            self.assertGreater(store.stats["upstream-subscriptions"]["cooldown_until"], time.time())
+
+        probe_at = local_datetime(2026, 4, 8, 15, 5, 0)
+        with ExitStack() as stack:
+            stack.enter_context(mock.patch("ai_proxy_hub.store.current_local_datetime", return_value=probe_at))
+            stack.enter_context(mock.patch("ai_proxy_hub.subscriptions.current_local_datetime", return_value=probe_at))
+            store.record_probe_result("upstream-subscriptions", status=200, latency_ms=188.0)
+
+        recovered_summary = self.summary_at(store, probe_at)
+        self.assertEqual(recovered_summary["state"], "ready")
+        self.assertTrue(recovered_summary["available"])
+        self.assertEqual(recovered_summary["current_subscription_id"], "sub-periodic")
+        with store.lock:
+            self.assertEqual(store.stats["upstream-subscriptions"]["cooldown_until"], 0.0)
 
     def test_periodic_subscription_stays_active_before_first_reset_of_day(self):
         store = self.create_store(

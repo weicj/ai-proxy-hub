@@ -1,3 +1,27 @@
+function upstreamSwitchActive(upstream, statusEntry = {}) {
+  if (!upstream?.enabled) {
+    return false;
+  }
+  if (Object.prototype.hasOwnProperty.call(statusEntry, "effective_enabled")) {
+    return Boolean(statusEntry.effective_enabled);
+  }
+  return true;
+}
+
+function upstreamIsTemporarilyUnavailable(upstream, statusEntry = {}) {
+  if (!upstream?.enabled) {
+    return false;
+  }
+  if (statusEntry.temporarily_disabled) {
+    return true;
+  }
+  const cooldownSeconds = Math.max(0, Number(statusEntry?.stats?.cooldown_remaining_sec || 0));
+  if (cooldownSeconds > 0) {
+    return true;
+  }
+  return ["manual_lock", "temporary_exhausted", "quota_exhausted", "expired"].includes(String(statusEntry.subscription_state || ""));
+}
+
 function getActivationMeta(upstreamId, enabled, protocol) {
   const statusItem = statusMap().get(upstreamId) || {};
   const cooldownSeconds = Math.max(0, Number(statusItem?.stats?.cooldown_remaining_sec || 0));
@@ -386,7 +410,7 @@ function renderUpstreams() {
     const upstream = getRenderedUpstream(baseUpstream.id);
     const expanded = state.expandedUpstreamIds.has(baseUpstream.id);
     const statusEntry = statusMap().get(baseUpstream.id) || {};
-    const switchActive = upstream.enabled && !statusEntry.subscription_manual_enable_required && statusEntry.subscription_state !== "quota_exhausted";
+    const switchActive = upstreamSwitchActive(upstream, statusEntry);
     return `
       <article class="upstream-card" data-upstream-id="${escapeHtml(baseUpstream.id)}">
         <div class="upstream-summary">
@@ -457,7 +481,7 @@ function renderUpstreams() {
             <div class="editor-footer">
               <div class="editor-actions">
                 <button class="secondary" type="button" data-action="test">${buttonLabelMarkup("flask", t("editorTest"))}</button>
-                ${((statusMap().get(baseUpstream.id)?.subscription_manual_enable_required) || (statusMap().get(baseUpstream.id)?.subscription_state === "quota_exhausted")) ? `<button class="secondary" type="button" data-action="reactivate-upstream">${buttonLabelMarkup("power", t("subscriptionReactivate"))}</button>` : ""}
+                ${upstreamIsTemporarilyUnavailable(upstream, statusEntry) ? `<button class="secondary" type="button" data-action="reactivate-upstream">${buttonLabelMarkup("power", t("subscriptionReactivate"))}</button>` : ""}
                 <button class="ghost" type="button" data-action="save-editor">${buttonLabelMarkup("check", t("editorSave"))}</button>
                 <button class="ghost" type="button" data-action="cancel-editor">${buttonLabelMarkup("undo", t("editorCancel"))}</button>
                 <button class="danger" type="button" data-action="remove">${buttonLabelMarkup("trash", t("editorDelete"))}</button>
@@ -506,9 +530,7 @@ function updateUpstreamSummaryDom() {
     const activation = getActivationMeta(upstreamId, upstream.enabled, upstream.protocol);
     const probe = getProbeSummary(upstreamId, stats);
     const requests = getRequestSummary(stats);
-    const switchActive = upstream.enabled
-      && !statusEntry.subscription_manual_enable_required
-      && statusEntry.subscription_state !== "quota_exhausted";
+    const switchActive = upstreamSwitchActive(upstream, statusEntry);
 
     card.querySelector("[data-role='summary-name']").textContent = upstream.name || "-";
     card.querySelector("[data-role='summary-base']").textContent = upstream.base_url || "—";

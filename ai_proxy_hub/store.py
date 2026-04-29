@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import threading
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -251,6 +251,40 @@ class ConfigStore:
             "subscriptions": descriptions,
         }
 
+    def _parse_runtime_timestamp_locked(self, value: Any) -> Optional[float]:
+        raw = str(value or "").strip()
+        if not raw:
+            return None
+        try:
+            return datetime.fromisoformat(raw.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return None
+
+    def _clear_temporary_unavailable_state_locked(self, upstream_id: str) -> None:
+        stat = self._ensure_upstream_stat_locked(upstream_id)
+        stat["cooldown_until"] = 0.0
+        stat["subscription_manual_enable_required"] = False
+        stat["subscription_manual_enable_reason"] = ""
+
+    def _reconcile_cooldowns_for_config_change_locked(self, previous_cooldown_seconds: int) -> None:
+        next_cooldown_seconds = max(0, int(self.config.get("cooldown_seconds") or 0))
+        if next_cooldown_seconds == max(0, int(previous_cooldown_seconds or 0)):
+            return
+        now_ts = time.time()
+        for stat in self.stats.values():
+            cooldown_until = float(stat.get("cooldown_until") or 0.0)
+            if cooldown_until <= now_ts:
+                continue
+            if next_cooldown_seconds <= 0:
+                stat["cooldown_until"] = 0.0
+                continue
+            last_failure_ts = self._parse_runtime_timestamp_locked(stat.get("last_attempt_at"))
+            if last_failure_ts is None:
+                stat["cooldown_until"] = now_ts + next_cooldown_seconds
+                continue
+            next_cooldown_until = last_failure_ts + next_cooldown_seconds
+            stat["cooldown_until"] = next_cooldown_until if next_cooldown_until > now_ts else 0.0
+
     def _mark_subscription_success_locked(self, upstream_id: str) -> None:
         upstream = self._find_upstream_locked(upstream_id)
         if not upstream:
@@ -396,7 +430,7 @@ class ConfigStore:
             stat["last_probe_models_count"] = models_count
             if models is not None:
                 stat["last_probe_models"] = [str(model_id).strip() for model_id in models if str(model_id).strip()]
-            stat["cooldown_until"] = 0.0
+            self._clear_temporary_unavailable_state_locked(upstream_id)
             record_subscription_success(upstream, stat, subscription_id)
             self._save_runtime_state_locked()
 
@@ -434,6 +468,7 @@ class ConfigStore:
     def save_config(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         config = normalize_config(raw)
         with self.lock:
+            previous_cooldown_seconds = int(self.config.get("cooldown_seconds") or 0)
             previous_by_id = {
                 upstream["id"]: upstream
                 for upstream in self.config.get("upstreams") or []
@@ -441,12 +476,11 @@ class ConfigStore:
             }
             self.config = config
             self._sync_stats_locked()
+            self._reconcile_cooldowns_for_config_change_locked(previous_cooldown_seconds)
             for upstream in self.config.get("upstreams") or []:
                 previous = previous_by_id.get(upstream["id"]) or {}
                 if upstream.get("enabled") and not previous.get("enabled", True):
-                    stat = self._ensure_upstream_stat_locked(upstream["id"])
-                    stat["subscription_manual_enable_required"] = False
-                    stat["subscription_manual_enable_reason"] = ""
+                    self._clear_temporary_unavailable_state_locked(upstream["id"])
             write_json(self.path, self.config)
             self._save_runtime_state_locked()
             return self.get_config()
@@ -498,7 +532,7 @@ class ConfigStore:
             stat["last_error"] = ""
             stat["last_attempt_at"] = now_iso()
             stat["last_success_at"] = stat["last_attempt_at"]
-            stat["cooldown_until"] = 0.0
+            self._clear_temporary_unavailable_state_locked(upstream_id)
             if latency_ms is not None:
                 rounded = round(float(latency_ms), 2)
                 stat["last_latency_ms"] = rounded
@@ -581,6 +615,9 @@ class ConfigStore:
             stat["last_probe_models_count"] = models_count
             if models is not None:
                 stat["last_probe_models"] = [str(model_id).strip() for model_id in models if str(model_id).strip()]
+            if status is not None and int(status) < 400 and not error:
+                self._clear_temporary_unavailable_state_locked(upstream_id)
+                self._mark_subscription_success_locked(upstream_id)
             self._save_runtime_state_locked()
 
     def record_local_key_result(self, local_key_id: str, *, success: bool, upstream_id: str = "", error: str = "") -> None:
@@ -713,10 +750,7 @@ class ConfigStore:
             upstream = self._find_upstream_locked(upstream_id)
             if not upstream:
                 return {"ok": False, "message": "upstream_not_found"}
-            stat = self._ensure_upstream_stat_locked(upstream_id)
-            stat["subscription_manual_enable_required"] = False
-            stat["subscription_manual_enable_reason"] = ""
-            stat["cooldown_until"] = 0.0
+            self._clear_temporary_unavailable_state_locked(upstream_id)
             for subscription in upstream.get("subscriptions") or []:
                 runtime_state = self._ensure_subscription_state_locked(upstream_id, subscription["id"])
                 runtime_state["exhausted"] = False

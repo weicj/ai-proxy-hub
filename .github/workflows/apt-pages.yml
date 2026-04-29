@@ -1,0 +1,194 @@
+name: Publish APT Repository
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the v prefix
+        required: true
+        type: string
+      distribution:
+        description: APT distribution
+        required: false
+        default: stable
+        type: string
+      component:
+        description: APT component
+        required: false
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+      APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+      APT_GPG_KEY_ID: ${{ vars.APT_GPG_KEY_ID != '' && vars.APT_GPG_KEY_ID || secrets.APT_GPG_KEY_ID }}
+      INPUT_VERSION: ${{ github.event.inputs.version }}
+      INPUT_DISTRIBUTION: ${{ github.event.inputs.distribution }}
+      INPUT_COMPONENT: ${{ github.event.inputs.component }}
+
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      distribution: ${{ steps.meta.outputs.distribution }}
+      component: ${{ steps.meta.outputs.component }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Resolve APT publication metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${INPUT_VERSION}"
+          fi
+          if [[ -z "${VERSION}" ]]; then
+            echo "Release version is required." >&2
+            exit 1
+          fi
+          DISTRIBUTION="${INPUT_DISTRIBUTION:-stable}"
+          COMPONENT="${INPUT_COMPONENT:-main}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "distribution=${DISTRIBUTION}" >> "$GITHUB_OUTPUT"
+          echo "component=${COMPONENT}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate signing secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${APT_GPG_PRIVATE_KEY}" ]]; then
+            echo "APT_GPG_PRIVATE_KEY secret is required." >&2
+            exit 1
+          fi
+          if [[ -z "${APT_GPG_KEY_ID}" ]]; then
+            echo "APT_GPG_KEY_ID variable or secret is required." >&2
+            exit 1
+          fi
+
+      - name: Import APT signing key
+        shell: bash
+        run: |
+          set -euo pipefail
+          GNUPG_HOME="$RUNNER_TEMP/gnupg"
+          mkdir -p "$GNUPG_HOME"
+          chmod 700 "$GNUPG_HOME"
+          printf '%s\n' "$APT_GPG_PRIVATE_KEY" > "$RUNNER_TEMP/apt-private.key"
+          gpg --batch --homedir "$GNUPG_HOME" --import "$RUNNER_TEMP/apt-private.key"
+          echo "GNUPGHOME=$GNUPG_HOME" >> "$GITHUB_ENV"
+
+      - name: Build release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_release.py \
+            --version "${{ steps.meta.outputs.version }}" \
+            --output-dir dist-apt
+
+      - name: Stage signed APT repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          PASS_ARGS=()
+          if [[ -n "${APT_GPG_PASSPHRASE}" ]]; then
+            PASS_ARGS+=(--gpg-passphrase-env APT_GPG_PASSPHRASE)
+          fi
+          python scripts/sync_apt_repo.py \
+            --deb "dist-apt/ai-proxy-hub_${{ steps.meta.outputs.version }}_all.deb" \
+            --repo-root "dist-apt/apt-repo" \
+            --distribution "${{ steps.meta.outputs.distribution }}" \
+            --component "${{ steps.meta.outputs.component }}" \
+            --gpg-key-id "${APT_GPG_KEY_ID}" \
+            --gpg-homedir "${GNUPGHOME}" \
+            --export-public-key \
+            "${PASS_ARGS[@]}"
+          touch dist-apt/apt-repo/.nojekyll
+
+      - name: Render APT repository index
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="${{ steps.pages.outputs.base_url }}"
+          {
+            printf '%s\n' '<!doctype html>'
+            printf '%s\n' '<html lang="en">'
+            printf '%s\n' '<head>'
+            printf '%s\n' '  <meta charset="utf-8">'
+            printf '%s\n' '  <meta name="viewport" content="width=device-width, initial-scale=1">'
+            printf '%s\n' '  <title>AI Proxy Hub APT Repository</title>'
+            printf '%s\n' '  <style>'
+            printf '%s\n' '    body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; background: #0b1220; color: #e5e7eb; }'
+            printf '%s\n' '    main { max-width: 920px; margin: 0 auto; padding: 48px 24px 72px; }'
+            printf '%s\n' '    h1 { font-size: 2rem; margin-bottom: 0.5rem; }'
+            printf '%s\n' '    p, li { line-height: 1.6; }'
+            printf '%s\n' '    pre { background: #111827; padding: 16px; border-radius: 12px; overflow-x: auto; border: 1px solid #1f2937; }'
+            printf '%s\n' '    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }'
+            printf '%s\n' '    a { color: #93c5fd; }'
+            printf '%s\n' '    .card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; padding: 20px; margin-top: 24px; }'
+            printf '%s\n' '    .muted { color: #9ca3af; }'
+            printf '%s\n' '  </style>'
+            printf '%s\n' '</head>'
+            printf '%s\n' '<body>'
+            printf '%s\n' '  <main>'
+            printf '%s\n' '    <h1>AI Proxy Hub APT Repository</h1>'
+            printf '%s\n' "    <p class=\"muted\">Version: ${{ steps.meta.outputs.version }} · Distribution: ${{ steps.meta.outputs.distribution }} · Component: ${{ steps.meta.outputs.component }}</p>"
+            printf '%s\n' '    <div class="card">'
+            printf '%s\n' '      <p>Install the repository keyring:</p>'
+            printf '%s\n' "      <pre><code>curl -fsSL \"${BASE_URL}/public/ai-proxy-hub-archive-keyring.asc\" | sudo gpg --dearmor -o /usr/share/keyrings/ai-proxy-hub-archive-keyring.gpg</code></pre>"
+            printf '%s\n' '      <p>Add the repository:</p>'
+            printf '%s\n' "      <pre><code>echo \"deb [signed-by=/usr/share/keyrings/ai-proxy-hub-archive-keyring.gpg] ${BASE_URL} ${{ steps.meta.outputs.distribution }} ${{ steps.meta.outputs.component }}\" | sudo tee /etc/apt/sources.list.d/ai-proxy-hub.list"
+            printf '%s\n' 'sudo apt update'
+            printf '%s\n' 'sudo apt install ai-proxy-hub</code></pre>'
+            printf '%s\n' '    </div>'
+            printf '%s\n' '    <div class="card">'
+            printf '%s\n' '      <p>Published files:</p>'
+            printf '%s\n' '      <ul>'
+            printf '%s\n' "        <li><a href=\"${BASE_URL}/dists/${{ steps.meta.outputs.distribution }}/Release\">Release</a></li>"
+            printf '%s\n' "        <li><a href=\"${BASE_URL}/dists/${{ steps.meta.outputs.distribution }}/InRelease\">InRelease</a></li>"
+            printf '%s\n' "        <li><a href=\"${BASE_URL}/dists/${{ steps.meta.outputs.distribution }}/Release.gpg\">Release.gpg</a></li>"
+            printf '%s\n' "        <li><a href=\"${BASE_URL}/public/ai-proxy-hub-archive-keyring.asc\">Public key (.asc)</a></li>"
+            printf '%s\n' "        <li><a href=\"${BASE_URL}/public/ai-proxy-hub-archive-keyring.gpg\">Public keyring (.gpg)</a></li>"
+            printf '%s\n' '      </ul>'
+            printf '%s\n' '    </div>'
+            printf '%s\n' '  </main>'
+            printf '%s\n' '</body>'
+            printf '%s\n' '</html>'
+          } > dist-apt/apt-repo/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-apt/apt-repo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -230,9 +230,18 @@ def get_status(
         stat = store._clone(store._merged_upstream_stat_locked(upstream["id"]))
         stat["cooldown_remaining_sec"] = max(0, int(stat.get("cooldown_until", 0.0) - now))
         subscription_summary = store._upstream_subscription_summary_locked(upstream, now_ts=now)
+        configured_enabled = bool(upstream.get("enabled", True))
+        has_connection_settings = bool(str(upstream.get("base_url") or "").strip()) and bool(str(upstream.get("api_key") or "").strip())
+        cooldown_active = stat["cooldown_remaining_sec"] > 0
+        effective_enabled = configured_enabled and has_connection_settings and bool(subscription_summary["available"]) and not cooldown_active
+        temporarily_disabled = configured_enabled and has_connection_settings and not effective_enabled
         upstreams.append(
             {
                 **store._clone(upstream),
+                "configured_enabled": configured_enabled,
+                "effective_enabled": effective_enabled,
+                "temporarily_disabled": temporarily_disabled,
+                "cooldown_active": cooldown_active,
                 "stats": stat,
                 "subscription_state": subscription_summary["state"],
                 "subscription_available": bool(subscription_summary["available"]),

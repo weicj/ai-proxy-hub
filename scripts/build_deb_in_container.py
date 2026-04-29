@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 from pathlib import Path
 
 
-DEFAULT_IMAGE = "ubuntu:24.04"
+DEFAULT_IMAGE = "python:3.12-slim-bookworm"
 
 
 def parse_args() -> argparse.Namespace:
@@ -38,12 +39,21 @@ def container_build_command(
         build_cmd.extend(["--download-base-url", download_base_url])
     if homepage:
         build_cmd.extend(["--homepage", homepage])
+    apt_retry_flags = "-o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
     shell_script = " && ".join(
         [
             "set -eu",
             "export DEBIAN_FRONTEND=noninteractive",
-            "apt-get update",
-            "apt-get install -y python3 dpkg-dev ca-certificates",
+            "mkdir -p /out",
+            "touch /out/.write-test && rm -f /out/.write-test",
+            (
+                "if ! command -v python3 >/dev/null 2>&1 || ! command -v dpkg-deb >/dev/null 2>&1; then "
+                "if command -v apt-get >/dev/null 2>&1; then "
+                f"apt-get update {apt_retry_flags} && "
+                f"apt-get install -y --no-install-recommends {apt_retry_flags} python3 dpkg ca-certificates; "
+                "else echo 'The selected container image must provide python3 and dpkg-deb.' >&2; exit 1; fi; "
+                "fi"
+            ),
             "cp -a /src/. /work",
             "cd /work",
             " ".join(build_cmd),
@@ -86,6 +96,10 @@ def main() -> None:
     source_root = Path(args.source_root).resolve()
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(output_dir, 0o777)
+    except PermissionError:
+        pass
     ensure_container_runtime_available(str(args.docker_binary))
     command = container_build_command(
         str(args.docker_binary),

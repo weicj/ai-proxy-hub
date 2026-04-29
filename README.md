@@ -191,7 +191,7 @@ AI Proxy Hub provides a single local control layer for that complexity. Instead 
 ### Distribution and release tooling
 
 - Portable `.tar.gz` and `.zip` release artifacts
-- Optional `.deb` generation when `dpkg-deb` is available
+- Optional `.deb` generation locally or in a Linux container
 - Generated metadata for Homebrew and winget workflows
 - Release artifact verification script
 - Local release snapshot sync workflow
@@ -519,25 +519,25 @@ python3 -m unittest discover -s tests -v
 ### Build release artifacts
 
 ```bash
-python3 scripts/build_release.py --version 0.3.1
+python3 scripts/build_release.py --version 0.3.2
 ```
 
 ### Verify release artifacts
 
 ```bash
-python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.1
+python3 scripts/verify_release_artifacts.py --dist-dir dist --version 0.3.2
 ```
 
 ### Run release preflight
 
 ```bash
-python3 scripts/release_preflight.py --version 0.3.1
+python3 scripts/release_preflight.py --version 0.3.2
 ```
 
 ### Sync the current source tree into the local release workspace
 
 ```bash
-python3 scripts/sync_release_snapshot.py --version 0.3.1
+python3 scripts/sync_release_snapshot.py --version 0.3.2
 ```
 
 ### Sync the generated Homebrew formula into a tap checkout
@@ -547,7 +547,7 @@ python3 scripts/sync_homebrew_tap.py \
   --formula dist/release-metadata/ai-proxy-hub.rb \
   --tap-root ~/Develop/AI\ Proxy\ Hub/homebrew-aiproxyhub \
   --tap-repo weicj/homebrew-aiproxyhub \
-  --version 0.3.1
+  --version 0.3.2
 ```
 
 ### Sync generated winget manifests into a local staging tree
@@ -557,14 +557,14 @@ python3 scripts/sync_winget_manifest.py \
   --source-dir dist/release-metadata \
   --repo-root ~/Develop/AI\ Proxy\ Hub/winget-staging \
   --package-id AIProxyHub.AIProxyHub \
-  --version 0.3.1
+  --version 0.3.2
 ```
 
 ### Sync a built `.deb` into a local APT repository tree
 
 ```bash
 python3 scripts/sync_apt_repo.py \
-  --deb dist/ai-proxy-hub_0.3.1_all.deb \
+  --deb dist/ai-proxy-hub_0.3.2_all.deb \
   --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
   --distribution stable \
   --component main
@@ -572,26 +572,54 @@ python3 scripts/sync_apt_repo.py \
 
 ### Build a `.deb` in a Linux container from macOS or another non-Debian host
 
-Make sure Docker Desktop or another compatible Docker daemon is already running.
+Make sure Docker Desktop or another compatible Docker daemon is already running. The helper uses a Python-based Debian container by default, so it does not rely on `dpkg-deb` being installed on the host.
 
 ```bash
 python3 scripts/build_deb_in_container.py \
-  --version 0.3.1 \
+  --version 0.3.2 \
   --output-dir dist-container \
-  --download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.1 \
+  --download-base-url https://github.com/weicj/ai-proxy-hub/releases/download/v0.3.2 \
   --homepage https://github.com/weicj/ai-proxy-hub
 ```
 
 ### Sign the staged APT repository when GPG is available
 
+You can bootstrap a dedicated signing key and export an installable public keyring with:
+
+```bash
+python3 scripts/bootstrap_apt_signing.py \
+  --no-protection
+```
+
+`--no-protection` is convenient for local staging. For a long-lived public signing key, prefer `--passphrase`.
+
+Then sign the staged repository and export the public key files into `apt-repo/public`:
+
 ```bash
 python3 scripts/sync_apt_repo.py \
-  --deb dist-container/ai-proxy-hub_0.3.1_all.deb \
+  --deb dist-container/ai-proxy-hub_0.3.2_all.deb \
   --repo-root ~/Develop/AI\ Proxy\ Hub/apt-repo \
   --distribution stable \
   --component main \
-  --gpg-key-id YOUR_KEY_ID
+  --gpg-key-id YOUR_KEY_ID \
+  --gpg-homedir ~/Develop/AI\ Proxy\ Hub/signing/gpg \
+  --export-public-key
 ```
+
+This writes:
+
+- `apt-repo/dists/stable/Release.gpg`
+- `apt-repo/dists/stable/InRelease`
+- `apt-repo/public/ai-proxy-hub-archive-keyring.asc`
+- `apt-repo/public/ai-proxy-hub-archive-keyring.gpg`
+
+For GitHub-hosted APT publication, set:
+
+- repository variable: `APT_GPG_KEY_ID`
+- repository secret: `APT_GPG_PRIVATE_KEY`
+- optional repository secret: `APT_GPG_PASSPHRASE`
+
+Then enable GitHub Pages with `GitHub Actions` as the source and run the `Publish APT Repository` workflow.
 
 ### Run a remote Linux smoke test
 
@@ -599,14 +627,14 @@ python3 scripts/sync_apt_repo.py \
 python3 scripts/run_remote_linux_smoke.py \
   --ssh user@linux-host \
   --identity-file ~/.ssh/id_ed25519 \
-  --artifact dist/ai-proxy-hub-0.3.1.tar.gz
+  --artifact dist/ai-proxy-hub-0.3.2.tar.gz
 ```
 
 ### Current artifact targets
 
 - `.tar.gz` for GitHub Releases and Homebrew-oriented flows
 - `.zip` for Windows portable distribution and winget-oriented flows
-- `.deb` when Debian packaging tools are available
+- `.deb` when Debian packaging tools are available locally or through the container helper
 
 ## Current Limitations
 

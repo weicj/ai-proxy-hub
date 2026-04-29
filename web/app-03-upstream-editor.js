@@ -353,12 +353,28 @@ async function toggleUpstreamEnabled(id) {
   if (!upstream) {
     return;
   }
-  const status = statusMap().get(id);
-  if (status?.subscription_manual_enable_required || status?.subscription_state === "quota_exhausted") {
+  const status = statusMap().get(id) || {};
+  const switchActive = upstreamSwitchActive(upstream, status);
+  if (switchActive) {
+    const nextEnabled = false;
+    state.config.upstreams = state.config.upstreams.map((item) => (
+      item.id === id ? { ...item, enabled: nextEnabled } : item
+    ));
+    if (state.editorDrafts[id]) {
+      state.editorDrafts[id] = {
+        ...cloneDeep(state.editorDrafts[id]),
+        enabled: nextEnabled,
+      };
+    }
+    refreshUpstreamDraftPreview();
+    noteConfigMutation({ autosave: true, immediate: true, silentDirty: true });
+    return;
+  }
+  if (upstreamIsTemporarilyUnavailable(upstream, status)) {
     await reactivateUpstream(id);
     return;
   }
-  const nextEnabled = !upstream.enabled;
+  const nextEnabled = true;
   state.config.upstreams = state.config.upstreams.map((item) => (
     item.id === id ? { ...item, enabled: nextEnabled } : item
   ));
