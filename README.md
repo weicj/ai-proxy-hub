@@ -268,7 +268,7 @@ For most macOS users, Homebrew is now the simplest installation path:
 
 ```bash
 brew tap weicj/aiproxyhub
-brew install ai-proxy-hub
+brew install weicj/aiproxyhub/ai-proxy-hub
 ```
 
 After installation, start it directly from the shell:
@@ -276,6 +276,14 @@ After installation, start it directly from the shell:
 ```bash
 ai-proxy-hub
 aiproxyhub
+```
+
+If you previously used the older tap name `weicj/tap`, remove it first to avoid duplicate-formula conflicts:
+
+```bash
+brew untap weicj/tap
+brew tap weicj/aiproxyhub
+brew upgrade weicj/aiproxyhub/ai-proxy-hub
 ```
 
 ### Other install paths

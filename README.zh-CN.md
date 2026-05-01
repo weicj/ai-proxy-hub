@@ -268,7 +268,7 @@ AI Proxy Hub 本地入口
 
 ```bash
 brew tap weicj/aiproxyhub
-brew install ai-proxy-hub
+brew install weicj/aiproxyhub/ai-proxy-hub
 ```
 
 安装完成后，可以直接在 shell 里启动：
@@ -276,6 +276,14 @@ brew install ai-proxy-hub
 ```bash
 ai-proxy-hub
 aiproxyhub
+```
+
+如果你之前用过旧的 tap 名称 `weicj/tap`，建议先移除它，避免出现重复 formula 冲突：
+
+```bash
+brew untap weicj/tap
+brew tap weicj/aiproxyhub
+brew upgrade weicj/aiproxyhub/ai-proxy-hub
 ```
 
 ### 其他安装方式

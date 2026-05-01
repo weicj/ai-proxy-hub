@@ -38,6 +38,16 @@ Installation can still use elevated privileges when the platform expects them, s
 
 So the rule is: installation may use `sudo`, but routine operation should not depend on it.
 
+## Homebrew says the formula exists in both `weicj/tap` and `weicj/aiproxyhub`. What should I do?
+
+That means an older tap checkout is still present locally. Remove the legacy tap, then upgrade with the new fully-qualified name:
+
+```bash
+brew untap weicj/tap
+brew tap weicj/aiproxyhub
+brew upgrade weicj/aiproxyhub/ai-proxy-hub
+```
+
 ## Can one local API key be limited to only one protocol?
 
 Yes. Local keys can be scoped to specific protocol families.
