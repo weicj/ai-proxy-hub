@@ -2355,7 +2355,8 @@ class PlatformSupportTest(unittest.TestCase):
             export_public_key_files.assert_called_once()
             args, kwargs = export_public_key_files.call_args
             self.assertEqual(args[0], "ABC123")
-            self.assertTrue(str(args[1]).endswith("apt-repo/public"))
+            self.assertEqual(Path(args[1]).name, "public")
+            self.assertEqual(Path(args[1]).parent.name, "apt-repo")
             self.assertEqual(kwargs["key_name"], "repo-key")
             self.assertEqual(kwargs["gpg_binary"], "gpg2")
             self.assertEqual(kwargs["homedir"], "/tmp/gnupg")
